@@ -7,7 +7,24 @@
     <title>Creating a Full-Stack Python Application with NPM, React.js and Webpack</title>
   </head>
   <body>
-    <h1>Realtime communication with WebRTC</h1>
+    <nav class="navbar navbar-inverse bg-inverse">
+      
+      <div class="navbar-header">
+        
+        <a class="navbar-brand" href="/">Lingvo</a>
+      </div>
+      
+      <div class="navbar-collapse collapse">
+        
+        <ul class="nav navbar-nav">
+          
+          <li><a href="#">About</a></li>
+          <li><a href="#">Contact</a></li>
+          
+        </ul>
+      </div>
+      
+    </nav>
     
     <video autoplay id="sourceVideo"></video>
     <div id="sourceVideoContent"></div>
@@ -15,6 +32,9 @@
     <video autoplay id="remoteVideo"></video>
     <div id="remoteVideoContent"></div>
     
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/notify/0.4.2/notify.js"></script>
+    <script src="https://cdn.socket.io/socket.io-1.4.0.js"></script>
     <script src="dist/bundle.js" type="text/javascript"></script>
   </body>
 </html>

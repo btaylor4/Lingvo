@@ -12,7 +12,6 @@ mongo = PyMongo(app)
     
 @socketio.on('message')
 def handle_message(message):
-    print('recieved message: ' + message)
     emit('message', message)
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -58,4 +57,5 @@ def index():
     return render_template("home.html")
 
 if __name__ == "__main__":
-    app.run(debug="true")
+    socketio.run(app, debug="true")
+    #app.run(debug="true")
