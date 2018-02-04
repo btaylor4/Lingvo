@@ -1,11 +1,10 @@
 import React from "react";
-import io from 'socket.io-client'
+import {localStream} from "./video"
 
 var socket = io.connect('localhost:5000');
 var channelReady = false;
 var started = false;
 var remoteStream;
-var localStream;
 var peerConn;
 
 var mediaConstraints = {
@@ -36,11 +35,9 @@ function onMessage(evt) {
     peerConn.createAnswer(setLocalAndSendMessage,
                           errorCallback, 
                           mediaConstraints);
-  } else if(evt.type === 'answer' && started) {
+  } else if(evt.type === 'answer') {
     peerConn.setRemoteDescription(new RTCSessionDescription(evt));
-  } else if(evt.type === 'candidate' && evt.candidate != null && started) {
-    console.log("Add candidate");
-    console.log(evt);
+  } else if(evt.type === 'candidate') {
     var candidate = new RTCIceCandidate(evt.candidate);
     peerConn.addIceCandidate(candidate);
   }
@@ -48,7 +45,7 @@ function onMessage(evt) {
 
 function sendClientMessage(message) {
   console.log("Client is sending message");
-  socket.emit('message', message);
+  socket.send('message', message);
 }
 
 function createPeerConnection() {
@@ -76,7 +73,7 @@ function createPeerConnection() {
 }
 
 function setLocalAndSendMessage(sessionDescription) {
-  console.log(sessionDescription);
+  //console.log(sessionDescription);
   peerConn.setLocalDescription(sessionDescription);
   sendClientMessage(sessionDescription);
 }

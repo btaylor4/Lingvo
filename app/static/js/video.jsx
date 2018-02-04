@@ -1,7 +1,7 @@
 // App.jsx
 import React from "react";
 
-var localStream;
+export var localStream;
 navigator.getUserMedia = navigator.getUserMedia ||
     navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
     
