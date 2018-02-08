@@ -13,43 +13,50 @@ socketio = SocketIO(app)
 mongo = PyMongo(app)
 
 connectedUsers = {}
-
+    
 def sentToClient(connection, message):
+    # connectUsers[connection.name].send(message)
     connection.send(message)
     
+@socketio.on('connect')
+def handle_connection():
+    if 'username' in session:
+        print("User: " + session['username'] + " has logged in")
+        connectedUsers[session['username']].send('hello')
+            
 @socketio.on('message')
 def handle_message(message):
     if(message["type"] == "offer"):
-        print("Offer has been made")
-        otherUser = connectedUsers[message["name"]]
+        print(message)
+        print("Sending offer to " + str(message["name"]))
+        connect = connectedUsers[message["name"]]
 
-        if(otherUser != None):
-            socketio.otherUser = otherUser
-            sentToClient(socketio, {
+        if(connect != None):
+            # connect.otherName = message["name"]
+            sentToClient(connect, {
                 "type": "offer", 
                 "offer": message["offer"],
-                "name": socketio.name
+                "name": connect.name
             })
-            
-    if(message["type"] == "answer"):
-        print("Sending answer")
+
+    elif(message["type"] == "answer"):
+        print("Sending answer to " + str(message["name"]))
         connect = connectedUsers[message["name"]]
         if(connect != None):
             socketio.otherUser = message["name"]
-            sentToClient(socketio, {
+            sentToClient(connect, {
                 "type": "answer", 
                 "answer": message["answer"]
             })
-            
-    if(message["type"] == "canidate"):
-        print("Sending canidate to")
+
+    elif(message["type"] == "canidate"):
+        print("Sending canidate to " + str(message["candidate"]))
         connect = connectedUsers[message["name"]]
         if(connect != None):
-            sendToClient(socketio, {
+            sendToClient(connect, {
                 "message": "candidate", 
                 "candidate": message["candidate"]
             })
-    emit(message)
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -80,7 +87,6 @@ def login():
                 error = 'Invalid Credentials. Please try again.'
                 return error    
             else:
-                socketio.name = request.form['username']
                 connectedUsers[request.form['username']] = socketio
                 session['username'] = request.form['username']
                 return redirect(url_for('home'))
