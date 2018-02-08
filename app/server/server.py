@@ -5,6 +5,13 @@ from flask_socketio import SocketIO
 from flask_socketio import send, emit
 import os
 
+from OpenSSL import SSL
+from werkzeug.serving import make_ssl_devcert
+path = '/Users/Bryan/Desktop/College/UF/Computer Engineering/Senior Design CEN 4914/Lingvo/app/server/'
+make_ssl_devcert(path, host='0.0.0.0')
+
+context = (path + '.crt',path + '.key')
+
 app = Flask(__name__, static_folder="../static/dist", template_folder="../static")
 app.config['MONGO_DBNAME'] = "lingvo"
 app.config['MONGO_URI'] = "mongodb://lingvoadmin:webrtc@ds117758.mlab.com:17758/lingvo"
@@ -49,12 +56,12 @@ def handle_message(message):
                 "answer": message["answer"]
             })
 
-    elif(message["type"] == "canidate"):
-        print("Sending canidate to " + str(message["candidate"]))
+    elif(message["type"] == "candidate"):
+        print("Sending candidate to " + str(message["name"]))
         connect = connectedUsers[message["name"]]
         if(connect != None):
-            sendToClient(connect, {
-                "message": "candidate", 
+            sentToClient(connect, {
+                "type": "candidate", 
                 "candidate": message["candidate"]
             })
 
@@ -88,6 +95,7 @@ def login():
                 return error    
             else:
                 connectedUsers[request.form['username']] = socketio
+                socketio.name = request.form['username']
                 session['username'] = request.form['username']
                 return redirect(url_for('home'))
             error = 'Invalid Credentials. Please try again.'  
@@ -103,5 +111,5 @@ def index():
         return render_template("home.html")
 
 if __name__ == "__main__":
-    socketio.run(app, debug="true")
+    socketio.run(app, debug="true", host='0.0.0.0') # , ssl_context='adhoc' add this to make it work on sperate computers
     #app.run(debug="true")
