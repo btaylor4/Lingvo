@@ -1,6 +1,6 @@
 import React from "react";
 import {localStream} from "./video"
-var socket = io.connect('192.168.1.10:5000');
+var socket = io.connect('10.136.73.50:5000');
 var remoteStream;
 var peerConn;
 var loggedUser;
@@ -13,11 +13,6 @@ var mediaConstraints = {
   }
 };
 
-socket.on('login', onLogin)
-function onLogin(evt) {
-  console.log(evt);
-}
-
 socket.on('connect', onChannelOpened);
 
 function onChannelOpened(evt) {
@@ -26,9 +21,36 @@ function onChannelOpened(evt) {
 
 socket.on('message', onMessage);
 
+function onMessage(evt) {
+  console.log("Client has recieved a message");
+  console.log(evt);
+  switch(evt.type) {
+    case 'offer':
+      // We reieve a call
+      onOffer(evt);
+      break;
+    
+    case 'answer':
+      // We answer the call
+      onAnswer(evt.answer);
+      break;
+    
+    case 'candidate':
+    if(evt.candidate != null) {
+      onCandidate(evt.candidate);
+    }
+      break;
+    
+    default:
+      break;
+  }
+}
+
 function onOffer(evt) {
-  connectedUser = evt.name;
-  peerConn.setRemoteDescription(new RTCSessionDescription(evt.offer));
+  connectedUser = evt.name; // not in use yet
+  
+  peerConn.setRemoteDescription(new RTCSessionDescription(evt.offer)); // sets the discription of the other person calling us
+  
   peerConn.createAnswer(function (answer) {
     console.log("Creating answer");
     peerConn.setLocalDescription(answer);
@@ -42,7 +64,7 @@ function onOffer(evt) {
 
 function onAnswer(evt) {
   console.log("Answer event");
-  peerConn.setRemoteDescription(new RTCSessionDescription(evt));
+  peerConn.setRemoteDescription(new RTCSessionDescription(evt)); // sets the discription of the other person calling us
 }
 
 function onCandidate(evt) {
@@ -50,29 +72,6 @@ function onCandidate(evt) {
   if(evt!= null) {
     var candidate = new RTCIceCandidate(evt);
     peerConn.addIceCandidate(candidate);
-  }
-}
-
-function onMessage(evt) {
-  console.log("Client has recieved a message");
-  console.log(evt);
-  switch(evt.type) {
-    case 'offer':
-      onOffer(evt);
-      break;
-    
-    case 'answer':
-      onAnswer(evt.answer);
-      break;
-    
-    case 'candidate':
-    if(evt.candidate != null) {
-      onCandidate(evt.candidate);
-    }
-      break;
-    
-    default:
-      break;
   }
 }
 
@@ -107,10 +106,6 @@ export function createPeerConnection() {
   peerConn.addStream(localStream);
 }
 
-function errorCallback() {
-  // alert('This done fucked up');
-}
-
 export default class ConnectButton extends React.Component {
   render() {
     return <button type="button" onClick={this.connectWithJo}>Call Jo</button>
@@ -129,7 +124,9 @@ export default class ConnectButton extends React.Component {
       mediaConstraints);
   }
   
+  // This method was going to be to test we can call different people, not tested or in use like it should yet
   connectWithJo() {
+    // We want to make a call to some one else
     peerConn.createOffer(function (offer) {
       peerConn.setLocalDescription(offer);
       sendClientMessage({
