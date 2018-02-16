@@ -1,21 +1,67 @@
 # server.py
-from flask import Flask, render_template, redirect, url_for, request
+from flask import Flask, render_template, redirect, url_for, request, session
 from flask.ext.pymongo import PyMongo
 from flask_socketio import SocketIO
 from flask_socketio import send, emit
+import os
 
 app = Flask(__name__, static_folder="../static/dist", template_folder="../static")
 app.config['MONGO_DBNAME'] = "lingvo"
 app.config['MONGO_URI'] = "mongodb://lingvoadmin:webrtc@ds117758.mlab.com:17758/lingvo"
+app.secret_key = os.urandom(24)
 socketio = SocketIO(app)
 mongo = PyMongo(app)
-    
-@socketio.on('message')
-def handle_message(message):
-    print('recieved message: ' + message)
-    emit('message', message)
 
-@app.route('/register', methods=['GET', 'POST'])
+connectedUsers = {}
+    
+def sentToClient(connection, message):
+    # connectUsers[connection.name].send(message)
+    connection.send(message)
+    
+@socketio.on('connect')
+def handle_connection():
+    if 'username' in session:
+        print("User: " + session['username'] + " has logged in")
+        connectedUsers[session['username']].send('hello')
+            
+@socketio.on('message')
+def handle_message(message): # server has recieved a message from a client
+    print(message)
+    if(message["type"] == "offer"):
+        print(message)
+        print("Sending offer to " + str(message["name"]))
+        
+        # this was set up to try and select specific clients to send messages to, not yet functional to my knowledge
+        connect = connectedUsers[message["name"]] 
+        
+        if(connect != None):
+            # connect.otherName = message["name"]
+            sentToClient(connect, {
+                "type": "offer", 
+                "offer": message["offer"],
+                "name": connect.name
+            })
+
+    elif(message["type"] == "answer"):
+        print("Sending answer to " + str(message["name"]))
+        connect = connectedUsers[message["name"]]
+        if(connect != None):
+            socketio.otherUser = message["name"]
+            sentToClient(connect, {
+                "type": "answer", 
+                "answer": message["answer"]
+            })
+
+    elif(message["type"] == "candidate"):
+        print("Sending candidate to " + str(message["name"]))
+        connect = connectedUsers[message["name"]]
+        if(connect != None):
+            sentToClient(connect, {
+                "type": "candidate", 
+                "candidate": message["candidate"]
+            })
+
+@app.route('/register', methods=['GET', 'POST']) # sets up the page for registration
 def register():
     if request.method == 'POST':
         # construct user
@@ -23,10 +69,10 @@ def register():
         username = request.form['username']
         password = request.form['password']
     
-        requested_user = mongo.db.users.find_one({'username': username})
+        requested_user = mongo.db.users.find_one({'username': username}) # searches the data base for the username chosen
         if requested_user is None:
-            mongo.db.users.insert({'username': username, 'password': password})
-            return redirect(url_for('home'))
+            mongo.db.users.insert({'username': username, 'password': password}) # makes a new user inside data base if non already exits
+            return redirect(url_for('index')) # send back to landing page
     
         else:
             return 'Username has already been taken'
@@ -34,7 +80,7 @@ def register():
     return render_template('registration.html')
                         
 
-@app.route('/login', methods=['GET', 'POST'])
+@app.route('/login', methods=['GET', 'POST']) # sets up the page for registration
 def login():
     error = None
     if request.method == 'POST':
@@ -44,18 +90,26 @@ def login():
                 error = 'Invalid Credentials. Please try again.'
                 return error    
             else:
-                return redirect(url_for('home'))
+                #TODO: Logic here was me trying to have the serve send to specific clients, not yet implemented
+                connectedUsers[request.form['username']] = socketio
+                socketio.name = request.form['username']
+                
+                #TODO: session logic does not work as it should at the moment
+                session['username'] = request.form['username']
+                
+                return redirect(url_for('home')) # send to page with video functionality
             error = 'Invalid Credentials. Please try again.'  
             return error
     return render_template('login.html', error=error)
         
 @app.route("/user-portal")
 def home():
-    return render_template("index.html")
+    #TODO: session logic does not work as it should at the moment
+    return render_template("index.html", username=session['username'])
     
 @app.route("/")
 def index():
-    return render_template("home.html")
+        return render_template("home.html")
 
 if __name__ == "__main__":
-    app.run(debug="true")
+    socketio.run(app) # debug = true to put in debug mode

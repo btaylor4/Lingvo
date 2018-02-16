@@ -1,7 +1,8 @@
 // App.jsx
 import React from "react";
+import {createPeerConnection} from "./client"
 
-var localStream;
+export var localStream;
 navigator.getUserMedia = navigator.getUserMedia ||
     navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
     
@@ -20,6 +21,7 @@ export default class StartVideo extends React.Component {
       var video = document.getElementById('sourceVideo');
       video.src = window.URL.createObjectURL(stream);
       localStream = stream;
+      createPeerConnection();
     }
 
     function errorCallback(error) {

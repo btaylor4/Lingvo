@@ -17,7 +17,7 @@
     "npm",
     "webpack"
   ],
-  "author": "Bryan Taylor",
+  "author": "Bryan Taylor and Robert Olsthoorn",
   "license": "ISC",
   "babel": {
     "presets": [
