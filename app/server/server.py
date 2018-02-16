@@ -1,7 +1,7 @@
 # server.py
 from flask import Flask, render_template, redirect, url_for, request, session
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
-from flask.ext.pymongo import PyMongo
+from flask_pymongo import PyMongo
 from flask_socketio import SocketIO
 from flask_socketio import send, emit
 from bson import json_util, ObjectId
@@ -79,6 +79,7 @@ def handle_message(message): # server has recieved a message from a client
             "room": room
         })
 
+<<<<<<< HEAD
     elif(message["type"] == "candidate"):
         requested_user = mongo.db.users.find_one({'username': message["id"]})
         room = connectedUsers[requested_user["username"]]
@@ -123,6 +124,15 @@ def handle_message(message): # server has recieved a message from a client
         })
         
 @app.route('/register', methods=['GET', 'POST']) # sets up the page for registration
+=======
+@socketio.on('audio', namespace='/test')
+def handle_audio(data):
+  print('received' + str(data))
+
+  # Call to client speech api here
+
+@app.route('/register', methods=['GET', 'POST'])
+>>>>>>> Clientside audio chunking passing to server
 def register():
     if request.method == 'POST':
         # construct user
@@ -169,4 +179,8 @@ def index():
         return render_template("home.html")
 
 if __name__ == "__main__":
+<<<<<<< HEAD
     socketio.run(app, debug=True) # debug = true to put in debug mode
+=======
+    socketio.run(app, debug="true")
+>>>>>>> Clientside audio chunking passing to server
