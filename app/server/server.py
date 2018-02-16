@@ -3,6 +3,7 @@ from flask import Flask, render_template, redirect, url_for, request, session
 from flask.ext.pymongo import PyMongo
 from flask_socketio import SocketIO
 from flask_socketio import send, emit
+import os
 
 app = Flask(__name__, static_folder="../static/dist", template_folder="../static")
 app.config['MONGO_DBNAME'] = "lingvo"
