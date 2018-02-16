@@ -1,6 +1,6 @@
 # server.py
 from flask import Flask, render_template, redirect, url_for, request
-from flask.ext.pymongo import PyMongo
+from flask_pymongo import PyMongo
 from flask_socketio import SocketIO
 from flask_socketio import send, emit
 
@@ -14,6 +14,12 @@ mongo = PyMongo(app)
 def handle_message(message):
     print('recieved message: ' + message)
     emit('message', message)
+
+@socketio.on('audio', namespace='/test')
+def handle_audio(data):
+  print('received' + str(data))
+
+  # Call to client speech api here
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -58,4 +64,4 @@ def index():
     return render_template("home.html")
 
 if __name__ == "__main__":
-    app.run(debug="true")
+    socketio.run(app, debug="true")
