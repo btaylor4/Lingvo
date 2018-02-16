@@ -3,16 +3,6 @@ from flask import Flask, render_template, redirect, url_for, request, session
 from flask.ext.pymongo import PyMongo
 from flask_socketio import SocketIO
 from flask_socketio import send, emit
-from OpenSSL import SSL
-from werkzeug.serving import make_ssl_devcert
-import os
-import ssl
-
-path = '/Users/Bryan/Desktop/College/UF/Computer Engineering/Senior Design CEN 4914/Lingvo/app/server/'
-make_ssl_devcert(path, host='0.0.0.0')
-
-context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
-context.load_cert_chain(path + '.crt', path + '.key')
 
 app = Flask(__name__, static_folder="../static/dist", template_folder="../static")
 app.config['MONGO_DBNAME'] = "lingvo"
@@ -121,5 +111,4 @@ def index():
         return render_template("home.html")
 
 if __name__ == "__main__":
-    socketio.run(app, debug="true", host='0.0.0.0') # , ssl_context='adhoc' add this to make it work on sperate computers
-    #app.run(debug="true")
+    socketio.run(app) # debug = true to put in debug mode

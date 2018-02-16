@@ -17,7 +17,7 @@
     "npm",
     "webpack"
   ],
-  "author": "Bryan Taylor",
+  "author": "Bryan Taylor and Robert Olsthoorn",
   "license": "ISC",
   "babel": {
     "presets": [
@@ -26,18 +26,10 @@
     ]
   },
   "devDependencies": {
-<<<<<<< HEAD
-    "@google-cloud/speech": "^1.0.1",
-=======
->>>>>>> master
     "babel-core": "^6.26.0",
     "babel-loader": "^7.1.2",
     "babel-preset-es2015": "^6.24.1",
     "babel-preset-react": "^6.24.1",
-<<<<<<< HEAD
-    "node-record-lpcm16": "^0.3.0",
-=======
->>>>>>> master
     "react": "^16.2.0",
     "react-dom": "^16.2.0",
     "socket.io": "^2.0.4",
