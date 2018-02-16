@@ -20,6 +20,8 @@ def handle_audio(data):
   print('received' + str(data))
 
   # Call to client speech api here
+  
+  # Have some sort of buffer queue
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
