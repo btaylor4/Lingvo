@@ -1,0 +1,7 @@
+Flask
+Flask-PyMongo
+Flask-SocketIO
+
+# Production
+gunicorn
+eventlet
