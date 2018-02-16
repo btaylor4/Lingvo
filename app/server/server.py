@@ -25,8 +25,7 @@ def handle_message(message): # server has recieved a message from a client
         print(message)
         sentToClient(socketio, {
             "type": "offer", 
-            "offer": message["offer"],
-            "name": connect.name
+            "offer": message["offer"]
         })
 
     elif(message["type"] == "answer"):

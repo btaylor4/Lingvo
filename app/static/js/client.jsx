@@ -1,6 +1,6 @@
 import React from "react";
 import {localStream} from "./video"
-var socket = io.connect('https://' + document.domain + ':' + location.port);
+var socket = io.connect('http://' + document.domain + ':' + location.port);
 var remoteStream;
 var peerConn;
 var loggedUser;
