@@ -89,7 +89,7 @@ def login():
                 socketio.name = request.form['username']
                 
                 #TODO: session logic does not work as it should at the moment
-                session['username'] = request.form['username']
+                # session['username'] = request.form['username']
                 
                 return redirect(url_for('home')) # send to page with video functionality
             error = 'Invalid Credentials. Please try again.'  
@@ -99,7 +99,7 @@ def login():
 @app.route("/user-portal")
 def home():
     #TODO: session logic does not work as it should at the moment
-    return render_template("index.html", username=session['username'])
+    return render_template("index.html") #, username=session['username']
     
 @app.route("/")
 def index():
