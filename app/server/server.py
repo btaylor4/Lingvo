@@ -17,12 +17,6 @@ connectedUsers = {}
 def sentToClient(connection, message):
     # connectUsers[connection.name].send(message)
     connection.send(message)
-    
-@socketio.on('connect')
-def handle_connection():
-    if 'username' in session:
-        print("User: " + session['username'] + " has logged in")
-        connectedUsers[session['username']].send('hello')
             
 @socketio.on('message')
 def handle_message(message): # server has recieved a message from a client
