@@ -1,7 +1,0 @@
-flask
-Flask_Pymongo
-socket.io
-
-# Production
-gunicorn
-eventlet
