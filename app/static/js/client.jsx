@@ -13,12 +13,6 @@ var mediaConstraints = {
   }
 };
 
-socket.on('connect', onChannelOpened);
-
-function onChannelOpened(evt) {
-  console.log("Channel has been opened");
-}
-
 socket.on('message', onMessage);
 
 function onMessage(evt) {
