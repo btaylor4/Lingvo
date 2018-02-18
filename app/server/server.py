@@ -3,7 +3,9 @@ from flask import Flask, render_template, redirect, url_for, request, session
 from flask.ext.pymongo import PyMongo
 from flask_socketio import SocketIO
 from flask_socketio import send, emit
+from bson import json_util, ObjectId
 import os
+import json
 
 app = Flask(__name__, static_folder="../static/dist", template_folder="../static")
 app.config['MONGO_DBNAME'] = "lingvo"
@@ -22,26 +24,51 @@ def sentToClient(connection, message):
 def handle_message(message): # server has recieved a message from a client
     print(message)
     if(message["type"] == "offer"):
-        print(message)
-        sentToClient(socketio, {
+        # print(message)
+        selected_user = message["id"]
+        socketio = connectUsers[selected_user]
+        
+        if socketio is not None:
+            sentToClient(socketio, {
             "type": "offer", 
             "offer": message["offer"]
-        })
+            })
 
     elif(message["type"] == "answer"):
-        print(message)
-        sentToClient(socketio, {
-            "type": "answer", 
-            "answer": message["answer"]
-        })
+        # print(message)
+        selected_user = message["id"]
+        socketio = connectUsers[selected_user]
+        
+        if socketio is not None:
+            sentToClient(socketio, {
+                "type": "answer", 
+                "answer": message["answer"]
+            })
 
     elif(message["type"] == "candidate"):
-        print(message)
-        print("Sending candidate to " + str(message["name"]))
-        sentToClient(socketio, {
-            "type": "candidate", 
-            "candidate": message["candidate"]
-        })
+        # print(message)
+        selected_user = message["id"]
+        socketio = connectUsers[selected_user]
+        
+        if socketio is not None:
+            sentToClient(socketio, {
+                "type": "candidate", 
+                "candidate": message["candidate"]
+            })
+        
+    elif(message["type"] == "getUsers"):
+        users = list(mongo.db.users.find())
+        for u in users: # Make sure to only return necessary information
+            del u['password']
+        
+        selected_user = message["id"]
+        socketio = connectUsers[selected_user]
+        
+        if socketio is not None:    
+            sentToClient(socketio, {
+                "type": "gotUsers", 
+                "users": json.loads(json_util.dumps(users))
+            })
 
 @app.route('/register', methods=['GET', 'POST']) # sets up the page for registration
 def register():
@@ -73,7 +100,8 @@ def login():
                 return error    
             else:
                 #TODO: Logic here was me trying to have the serve send to specific clients, not yet implemented
-                connectedUsers[request.form['username']] = socketio
+                # connectedUsers[request.form['username']] = socketio
+                connectedUsers[requested_user['_id']] = SocketIO(app)
                 socketio.name = request.form['username']
                 
                 #TODO: session logic does not work as it should at the moment
@@ -94,4 +122,4 @@ def index():
         return render_template("home.html")
 
 if __name__ == "__main__":
-    socketio.run(app) # debug = true to put in debug mode
+    socketio.run(app, debug=True) # debug = true to put in debug mode
