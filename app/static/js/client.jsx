@@ -6,6 +6,7 @@ var remoteStream;
 var peerConn;
 var loggedUser;
 var connectedUser;
+var users;
 
 var mediaConstraints = {
   'mandatory': {
@@ -36,6 +37,11 @@ function onMessage(evt) {
     }
       break;
     
+    case 'gotUsers':
+      users = evt.users;
+      console.log(users);
+      break;
+      
     default:
       break;
   }
