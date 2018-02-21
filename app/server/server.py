@@ -1,5 +1,6 @@
 # server.py
 from flask import Flask, render_template, redirect, url_for, request, session
+from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from flask.ext.pymongo import PyMongo
 from flask_socketio import SocketIO
 from flask_socketio import send, emit
@@ -14,62 +15,112 @@ app.secret_key = os.urandom(24)
 socketio = SocketIO(app)
 mongo = PyMongo(app)
 
-connectedUsers = {}
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login'
+
+@login_manager.user_loader
+def load_user(user_id):
+    user = mongo.db.users.find_one({"username": user_id})
+    if not user:
+        return None
+    return User(user['_id'])
     
-def sentToClient(connection, message):
-    # connectUsers[connection.name].send(message)
+connectedUsers = {}
+
+class User():
+    def __init__(self, username):
+        self.username = username
+        self.email = None
+
+    def is_authenticated(self):
+        return True
+
+    def is_active(self):
+        return True
+
+    def is_anonymous(self):
+        return False
+
+    def get_id(self):
+        return self.username
+    
+def sendToClient(connection, message):
+    # connectedUsers[connection.name].send(message)
     connection.send(message)
-            
+
+def sendToRoom(connection, message):
+    connection.send(message, room=message["room"])
+                
 @socketio.on('message')
 def handle_message(message): # server has recieved a message from a client
     print(message)
     if(message["type"] == "offer"):
-        # print(message)
-        selected_user = message["id"]
-        socketio = connectUsers[selected_user]
+        requested_user = mongo.db.users.find_one({'username': message["id"]})
+        room = connectedUsers[requested_user["username"]]
+        print(requested_user["username"])
         
-        if socketio is not None:
-            sentToClient(socketio, {
+        sendToRoom(socketio, {
             "type": "offer", 
-            "offer": message["offer"]
-            })
+            "offer": message["offer"],
+            "room": room,
+            "username": requested_user["username"]
+        })
+        
+        # sendToClient(socketio, {
+        #     "type": "offer", 
+        #     "offer": message["offer"]
+        # })
 
     elif(message["type"] == "answer"):
-        # print(message)
-        selected_user = message["id"]
-        socketio = connectUsers[selected_user]
+        requested_user = mongo.db.users.find_one({'username': message["id"]})
+        room = connectedUsers[requested_user["username"]]
         
-        if socketio is not None:
-            sentToClient(socketio, {
-                "type": "answer", 
-                "answer": message["answer"]
-            })
+        sendToRoom(socketio, {
+            "type": "answer", 
+            "answer": message["answer"],
+            "room": room,
+            "username": requested_user["username"]
+        })
+
+        # sendToClient(socketio, {
+        #     "type": "answer", 
+        #     "answer": message["answer"]
+        # })
 
     elif(message["type"] == "candidate"):
-        # print(message)
-        selected_user = message["id"]
-        socketio = connectUsers[selected_user]
+        requested_user = mongo.db.users.find_one({'username': message["id"]})
+        room = connectedUsers[requested_user["username"]]
         
-        if socketio is not None:
-            sentToClient(socketio, {
-                "type": "candidate", 
-                "candidate": message["candidate"]
-            })
+        sendToRoom(socketio, {
+            "type": "candidate", 
+            "candidate": message["candidate"],
+            "room": room,
+            "username": requested_user["username"]
+        })
+        
+        # sendToClient(socketio, {
+        #     "type": "candidate", 
+        #     "candidate": message["candidate"]
+        # })
         
     elif(message["type"] == "getUsers"):
         users = list(mongo.db.users.find())
         for u in users: # Make sure to only return necessary information
             del u['password']
         
-        selected_user = message["id"]
-        socketio = connectUsers[selected_user]
+        sendToClient(socketio, {
+            "type": "gotUsers", 
+            "users": json.loads(json_util.dumps(users))
+        })
         
-        if socketio is not None:    
-            sentToClient(socketio, {
-                "type": "gotUsers", 
-                "users": json.loads(json_util.dumps(users))
-            })
-
+    elif(message["type"] == "getSession"):
+        connectedUsers[message["user"]] = request.sid
+        sendToClient(socketio, {
+            "type": "session", 
+            "sid": request.sid
+        })
+        
 @app.route('/register', methods=['GET', 'POST']) # sets up the page for registration
 def register():
     if request.method == 'POST':
@@ -91,30 +142,27 @@ def register():
 
 @app.route('/login', methods=['GET', 'POST']) # sets up the page for registration
 def login():
-    error = None
     if request.method == 'POST':
         requested_user = mongo.db.users.find_one({'username': request.form['username']})
         if requested_user:
             if requested_user['password'].encode('utf-8') != request.form['password'].encode('utf-8'):
-                error = 'Invalid Credentials. Please try again.'
-                return error    
+                return 'Invalid Credentials. Please try again.' 
             else:
-                #TODO: Logic here was me trying to have the serve send to specific clients, not yet implemented
-                # connectedUsers[request.form['username']] = socketio
-                connectedUsers[requested_user['_id']] = SocketIO(app)
-                socketio.name = request.form['username']
-                
-                #TODO: session logic does not work as it should at the moment
-                # session['username'] = request.form['username']
-                
+                connectedUsers[request.form['username']] = None
+                user = User(username=request.form['username'])
+                login_user(user)
                 return redirect(url_for('home')) # send to page with video functionality
-            error = 'Invalid Credentials. Please try again.'  
-            return error
-    return render_template('login.html', error=error)
-        
+            return 'Invalid Credentials. Please try again.'
+    return render_template('login.html')
+
+@app.route("/logout")
+def logout():
+    logout_user()
+    return redirect(url_for('index'))
+           
 @app.route("/user-portal")
+@login_required
 def home():
-    #TODO: session logic does not work as it should at the moment
     return render_template("index.html") #, username=session['username']
     
 @app.route("/")
