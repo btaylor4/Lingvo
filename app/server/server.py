@@ -72,13 +72,6 @@ def login():
                 error = 'Invalid Credentials. Please try again.'
                 return error    
             else:
-                #TODO: Logic here was me trying to have the serve send to specific clients, not yet implemented
-                connectedUsers[request.form['username']] = socketio
-                socketio.name = request.form['username']
-                
-                #TODO: session logic does not work as it should at the moment
-                # session['username'] = request.form['username']
-                
                 return redirect(url_for('home')) # send to page with video functionality
             error = 'Invalid Credentials. Please try again.'  
             return error
