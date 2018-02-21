@@ -64,7 +64,7 @@ def handle_message(message): # server has recieved a message from a client
             "type": "offer", 
             "offer": message["offer"],
             "room": room,
-            "username": requested_user["username"]
+            "username": message["username"] # person sending offer's username
         })
         
         # sendToClient(socketio, {
@@ -73,14 +73,14 @@ def handle_message(message): # server has recieved a message from a client
         # })
 
     elif(message["type"] == "answer"):
+         # person we want to send answer to, after recieved offer
         requested_user = mongo.db.users.find_one({'username': message["id"]})
         room = connectedUsers[requested_user["username"]]
         
         sendToRoom(socketio, {
             "type": "answer", 
             "answer": message["answer"],
-            "room": room,
-            "username": requested_user["username"]
+            "room": room
         })
 
         # sendToClient(socketio, {
@@ -95,8 +95,7 @@ def handle_message(message): # server has recieved a message from a client
         sendToRoom(socketio, {
             "type": "candidate", 
             "candidate": message["candidate"],
-            "room": room,
-            "username": requested_user["username"]
+            "room": room
         })
         
         # sendToClient(socketio, {

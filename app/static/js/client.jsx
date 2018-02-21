@@ -33,7 +33,6 @@ class LoginButton extends React.Component {
 
 class LoginForm extends React.Component {  
   render() {
-    // console.log(window.location.pathname);
     return <form method="POST">
       <input id="username" type="text" placeholder="Username" name="username"/>
         
@@ -101,7 +100,8 @@ function onMessage(evt) {
 }
 
 function onOffer(evt) {
-  connectedUser = evt.username; // not in use yet
+  connectedUser = evt.username;
+  console.log("We recieved a call from " + connectedUser);
   
   peerConn.setRemoteDescription(new RTCSessionDescription(evt.offer)); // sets the discription of the other person calling us
   
@@ -174,7 +174,8 @@ class Card extends React.Component {
       sendClientMessage({
         type: "offer",
         offer: offer,
-        id: name
+        id: name, // who we want to talk to (username)
+        username: session.getItem('username') // who we are
       });
     }, 
       errorCallback, 
