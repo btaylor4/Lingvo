@@ -31,7 +31,5 @@ export default class StartVideo extends React.Component {
     navigator.getUserMedia(constraints, 
       successCallback, 
       errorCallback);
-      
-    console.log('https://' + document.domain + ':' + location.port); // For debugging purposes
   }
 }
