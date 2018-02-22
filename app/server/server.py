@@ -5,6 +5,7 @@ from flask.ext.pymongo import PyMongo
 from flask_socketio import SocketIO
 from flask_socketio import send, emit
 from bson import json_util, ObjectId
+from werkzeug.security import generate_password_hash
 import os
 import json
 
@@ -127,10 +128,10 @@ def register():
         # name = request.form['firstname']
         username = request.form['username']
         password = request.form['password']
-    
+        hashed_password = generate_password_hash(password, method='sha256')
         requested_user = mongo.db.users.find_one({'username': username}) # searches the data base for the username chosen
         if requested_user is None:
-            mongo.db.users.insert({'username': username, 'password': password}) # makes a new user inside data base if non already exits
+            mongo.db.users.insert({'username': username, 'password': hashed_password}) # makes a new user inside data base if non already exits
             return redirect(url_for('index')) # send back to landing page
     
         else:
@@ -144,7 +145,7 @@ def login():
     if request.method == 'POST':
         requested_user = mongo.db.users.find_one({'username': request.form['username']})
         if requested_user:
-            if requested_user['password'].encode('utf-8') != request.form['password'].encode('utf-8'):
+            if check_password_hash(requested_user["password"], request.form['password']):
                 return 'Invalid Credentials. Please try again.' 
             else:
                 connectedUsers[request.form['username']] = None
