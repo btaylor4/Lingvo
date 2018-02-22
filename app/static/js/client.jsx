@@ -142,7 +142,7 @@ export function createPeerConnection() {
   console.log("Creating PeerConnection")
   var pc_config = {
     'iceServers' :[{
-    'url': 'stun1.l.google.com:19302'
+    'url': 'stun:stun2.1.google.com:19302'
     }]
   };
 
