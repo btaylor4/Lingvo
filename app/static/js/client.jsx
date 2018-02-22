@@ -142,11 +142,11 @@ export function createPeerConnection() {
   console.log("Creating PeerConnection")
   var pc_config = {
     'iceServers' :[{
-    'urls': 'stun1.l.google.com:19302'
+    'url': 'stun1.l.google.com:19302'
     }]
   };
 
-  peerConn = new RTCPeerConnection();
+  peerConn = new RTCPeerConnection(pc_config);
 
   peerConn.onicecandidate = function(evt) {
     if(evt.candidate != null) {
