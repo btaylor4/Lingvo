@@ -1,2 +1,4 @@
 node_modules/
-.DS_Storebundle.js
+.DS_Store
+bundle.js
+
