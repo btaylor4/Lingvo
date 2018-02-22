@@ -146,13 +146,11 @@ def login():
         requested_user = mongo.db.users.find_one({'username': request.form['username']})
         if requested_user:
             if check_password_hash(requested_user["password"], request.form['password']):
-                return 'Invalid Credentials. Please try again.' 
-            else:
                 connectedUsers[request.form['username']] = None
                 user = User(username=request.form['username'])
                 login_user(user)
                 return redirect(url_for('home')) # send to page with video functionality
-            return 'Invalid Credentials. Please try again.'
+        return 'Invalid Credentials. Please try again.'
     return render_template('login.html')
 
 @app.route("/logout")
