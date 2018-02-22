@@ -61,6 +61,10 @@ function onAnswer(evt) {
   peerConn.setRemoteDescription(new RTCSessionDescription(evt)); // sets the discription of the other person calling us
 }
 
+function errorCallback() {
+  console.log("Error occured");
+}
+
 function onCandidate(evt) {
   console.log("Candidate event");
   if(evt!= null) {

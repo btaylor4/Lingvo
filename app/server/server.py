@@ -23,37 +23,25 @@ def handle_message(message): # server has recieved a message from a client
     print(message)
     if(message["type"] == "offer"):
         print(message)
-        print("Sending offer to " + str(message["name"]))
-        
-        # this was set up to try and select specific clients to send messages to, not yet functional to my knowledge
-        connect = connectedUsers[message["name"]] 
-        
-        if(connect != None):
-            # connect.otherName = message["name"]
-            sentToClient(connect, {
-                "type": "offer", 
-                "offer": message["offer"],
-                "name": connect.name
-            })
+        sentToClient(socketio, {
+            "type": "offer", 
+            "offer": message["offer"]
+        })
 
     elif(message["type"] == "answer"):
-        print("Sending answer to " + str(message["name"]))
-        connect = connectedUsers[message["name"]]
-        if(connect != None):
-            socketio.otherUser = message["name"]
-            sentToClient(connect, {
-                "type": "answer", 
-                "answer": message["answer"]
-            })
+        print(message)
+        sentToClient(socketio, {
+            "type": "answer", 
+            "answer": message["answer"]
+        })
 
     elif(message["type"] == "candidate"):
+        print(message)
         print("Sending candidate to " + str(message["name"]))
-        connect = connectedUsers[message["name"]]
-        if(connect != None):
-            sentToClient(connect, {
-                "type": "candidate", 
-                "candidate": message["candidate"]
-            })
+        sentToClient(socketio, {
+            "type": "candidate", 
+            "candidate": message["candidate"]
+        })
 
 @app.route('/register', methods=['GET', 'POST']) # sets up the page for registration
 def register():
@@ -84,13 +72,6 @@ def login():
                 error = 'Invalid Credentials. Please try again.'
                 return error    
             else:
-                #TODO: Logic here was me trying to have the serve send to specific clients, not yet implemented
-                connectedUsers[request.form['username']] = socketio
-                socketio.name = request.form['username']
-                
-                #TODO: session logic does not work as it should at the moment
-                session['username'] = request.form['username']
-                
                 return redirect(url_for('home')) # send to page with video functionality
             error = 'Invalid Credentials. Please try again.'  
             return error
@@ -99,7 +80,7 @@ def login():
 @app.route("/user-portal")
 def home():
     #TODO: session logic does not work as it should at the moment
-    return render_template("index.html", username=session['username'])
+    return render_template("index.html") #, username=session['username']
     
 @app.route("/")
 def index():
