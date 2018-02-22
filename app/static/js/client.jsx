@@ -7,6 +7,7 @@ var started = false;
 var remoteStream;
 var localStream;
 var peerConn;
+export var dataChannel;
 
 var mediaConstraints = {
   'mandatory': {
@@ -85,11 +86,42 @@ function errorCallback() {
   alert('This done fucked up');
 }
 
+//Code to support data communication. Used for sending translated data
+
+function registerDataChannel() {
+  var dataChannelOptions = {
+    ordered: true,
+    maxRetransmitTime: 1000, // millseconds
+  }
+  
+  dataChannel = peerConn.createDataChannel('translations', dataChannelOptions);
+  
+  // register callbacks
+  dataChannel.onerror = error => {
+    console.log('Data Channel Error' + error);
+  }
+  
+  dataChannel.onmessage = event => {
+    console.log('Got data channel message', event.data);
+    //Route event information through here
+  }
+  
+  dataChannel.onopen = () => {
+    dataChannel.send('Opened data channel');
+  }
+  
+  dataChannel.onclose = () => {
+    console.log('Data channel is now closed');
+  }
+}
+
+
 export default class ConnectButton extends React.Component {
   render() {
     return <button type="button" onClick={this.connect}>Connect</button>
   }
   
+
   connect() {
     createPeerConnection();  
     peerConn.createOffer(setLocalAndSendMessage, 

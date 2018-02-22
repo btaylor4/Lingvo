@@ -15,14 +15,6 @@ def handle_message(message):
     print('recieved message: ' + message)
     emit('message', message)
 
-@socketio.on('audio', namespace='/test')
-def handle_audio(data):
-  print('received' + str(data))
-
-  # Call to client speech api here
-  
-  # Have some sort of buffer queue
-
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
