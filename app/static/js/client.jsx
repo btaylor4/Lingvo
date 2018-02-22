@@ -140,7 +140,11 @@ function sendClientMessage(message) {
 
 export function createPeerConnection() {
   console.log("Creating PeerConnection")
-  var pc_config = {"iceServers" :[]};
+  var pc_config = {
+    'iceServers' :[{
+    'urls': 'stun1.l.google.com:19302'
+    }]
+  };
 
   peerConn = new RTCPeerConnection();
 
