@@ -67,11 +67,6 @@ def handle_message(message): # server has recieved a message from a client
             "room": room,
             "username": message["username"] # person sending offer's username
         })
-        
-        # sendToClient(socketio, {
-        #     "type": "offer", 
-        #     "offer": message["offer"]
-        # })
 
     elif(message["type"] == "answer"):
          # person we want to send answer to, after recieved offer
@@ -84,11 +79,6 @@ def handle_message(message): # server has recieved a message from a client
             "room": room
         })
 
-        # sendToClient(socketio, {
-        #     "type": "answer", 
-        #     "answer": message["answer"]
-        # })
-
     elif(message["type"] == "candidate"):
         requested_user = mongo.db.users.find_one({'username': message["id"]})
         room = connectedUsers[requested_user["username"]]
@@ -99,15 +89,18 @@ def handle_message(message): # server has recieved a message from a client
             "room": room
         })
         
-        # sendToClient(socketio, {
-        #     "type": "candidate", 
-        #     "candidate": message["candidate"]
-        # })
-        
     elif(message["type"] == "getUsers"):
+        room = connectedUsers[message["user"]]
+        
         users = list(mongo.db.users.find())
         for u in users: # Make sure to only return necessary information
             del u['password']
+        
+        # sendToRoom(socketio, {
+        #     "type": "gotUsers", 
+        #     "users": json.loads(json_util.dumps(users)),
+        #     "room": room
+        # })
         
         sendToClient(socketio, {
             "type": "gotUsers", 
@@ -115,7 +108,15 @@ def handle_message(message): # server has recieved a message from a client
         })
         
     elif(message["type"] == "getSession"):
-        connectedUsers[message["user"]] = request.sid
+        room = connectedUsers[message["user"]]
+        
+        # Not sure if this will work
+        # sendToRoom(socketio, {
+        #     "type": "session", 
+        #     "sid": request.sid
+        #     "room": room
+        # })
+        
         sendToClient(socketio, {
             "type": "session", 
             "sid": request.sid

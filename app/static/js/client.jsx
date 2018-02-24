@@ -5,13 +5,14 @@ import {localStream} from "./video";
 import StartVideo from "./video"
 
 // variables
-var socket = io.connect('https://' + document.domain + ':' + location.port);
+var socket = io.connect('http://' + document.domain + ':' + location.port);
 var remoteStream;
 var peerConn;
 var connectedUser;
 var users;
 var sid;
 var session = window.localStorage;
+var username;
 
 var mediaConstraints = {
   'mandatory': {
@@ -23,7 +24,7 @@ var mediaConstraints = {
 // Components
 class LoginButton extends React.Component {
   handleClick() {
-    window.localStorage.setItem('username', document.getElementById('username').value)
+    window.localStorage.setItem('username', document.getElementById('username').value);
   }
   
   render() {
@@ -58,7 +59,8 @@ function onConnection() {
     });
     
     sendClientMessage({
-      type: 'getUsers'
+      type: 'getUsers',
+      user: session.getItem('username')
     });
   }
 }
@@ -92,6 +94,7 @@ function onMessage(evt) {
     case 'session':
       console.log("Got session")
       sid = evt.sid;
+      username = session.getItem('username');
       break;
         
     default:
