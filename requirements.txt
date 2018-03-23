@@ -1,6 +1,7 @@
 Flask
 Flask-PyMongo
 Flask-SocketIO
+Flask-Login
 
 # Production
 gunicorn
