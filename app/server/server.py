@@ -122,8 +122,6 @@ def handle_message(message): # server has recieved a message from a client
             "sid": request.sid
         })
         
-@app.route('/register', methods=['GET', 'POST']) # sets up the page for registration
-=======
 @socketio.on('audio', namespace='/test')
 def handle_audio(data):
   print('received' + str(data))
@@ -132,10 +130,7 @@ def handle_audio(data):
   
   # Have some sort of buffer queue
 
-=======
->>>>>>> Adding some translation
 @app.route('/register', methods=['GET', 'POST'])
->>>>>>> Clientside audio chunking passing to server
 def register():
     if request.method == 'POST':
         # construct user
@@ -182,12 +177,4 @@ def index():
         return render_template("home.html")
 
 if __name__ == "__main__":
-<<<<<<< HEAD
-<<<<<<< HEAD
     socketio.run(app, debug=True) # debug = true to put in debug mode
-=======
-    socketio.run(app, debug="true")
->>>>>>> Clientside audio chunking passing to server
-=======
-    socketio.run(app, debug="true")
->>>>>>> ff32cf02d52720e3df153afac9535e9e4b1cd010
