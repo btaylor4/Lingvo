@@ -79,7 +79,6 @@ def handle_message(message): # server has recieved a message from a client
             "room": room
         })
 
-<<<<<<< HEAD
     elif(message["type"] == "candidate"):
         requested_user = mongo.db.users.find_one({'username': message["id"]})
         room = connectedUsers[requested_user["username"]]
@@ -133,6 +132,8 @@ def handle_audio(data):
   
   # Have some sort of buffer queue
 
+=======
+>>>>>>> Adding some translation
 @app.route('/register', methods=['GET', 'POST'])
 >>>>>>> Clientside audio chunking passing to server
 def register():
