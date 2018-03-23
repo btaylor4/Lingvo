@@ -9,6 +9,7 @@ var socket = io.connect('http://' + document.domain + ':' + location.port);
 var remoteStream;
 var peerConn;
 <<<<<<< HEAD
+<<<<<<< HEAD
 var connectedUser;
 var users;
 var sid;
@@ -17,6 +18,9 @@ var username;
 =======
 export var dataChannel;
 >>>>>>> Adding some translation
+=======
+export var dataChannel;
+>>>>>>> ff32cf02d52720e3df153afac9535e9e4b1cd010
 
 var mediaConstraints = {
   'mandatory': {
@@ -218,12 +222,15 @@ class FriendCards extends React.Component {
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 class SearchBar extends React.Component {
   onTextChange() {
     this.props.onUserInput(this.refs.filterTextInput);
   }
   
 =======
+=======
+>>>>>>> ff32cf02d52720e3df153afac9535e9e4b1cd010
 //Code to support data communication. Used for sending translated data
 
 function registerDataChannel() {
@@ -276,11 +283,14 @@ class FilteredCards extends React.Component {
   }
   
 <<<<<<< HEAD
+<<<<<<< HEAD
   handleUserInput(text) {
     this.setState({
       filterText: text
     })
 =======
+=======
+>>>>>>> ff32cf02d52720e3df153afac9535e9e4b1cd010
 
   connect() {
     createPeerConnection();  

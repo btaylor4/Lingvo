@@ -183,7 +183,11 @@ def index():
 
 if __name__ == "__main__":
 <<<<<<< HEAD
+<<<<<<< HEAD
     socketio.run(app, debug=True) # debug = true to put in debug mode
 =======
     socketio.run(app, debug="true")
 >>>>>>> Clientside audio chunking passing to server
+=======
+    socketio.run(app, debug="true")
+>>>>>>> ff32cf02d52720e3df153afac9535e9e4b1cd010
