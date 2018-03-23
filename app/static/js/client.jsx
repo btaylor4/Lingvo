@@ -5,7 +5,7 @@ import {localStream} from "./video";
 import StartVideo from "./video"
 
 // variables
-var socket = io.connect('http://' + document.domain + ':' + location.port);
+var socket = io.connect('https://' + document.domain + ':' + location.port);
 var remoteStream;
 var peerConn;
 var connectedUser;
