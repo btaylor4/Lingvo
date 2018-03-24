@@ -3,9 +3,10 @@ import React from "react";
 import ReactDOM from "react-dom";
 import {localStream} from "./video";
 import StartVideo from "./video"
+import {translateText} from "./translate"
 
 // variables
-var socket = io.connect('https://' + document.domain + ':' + location.port);
+var socket = io.connect('http://' + document.domain + ':' + location.port);
 var remoteStream;
 var peerConn;
 var dataChannel;
@@ -173,14 +174,22 @@ export function createPeerConnection() {
 
     //Set data channel here
 
-    dataChannel = peerConn.createDataChannel('translation', {reliable: false});
-    dataChannel.onerror = function (error) {
+    dataChannel = peerConn.createDataChannel('translation', {reliable: true});
+    
+      dataChannel.onerror = function (error) {
         console.log("Data Channel Error:", error);
       };
       
       dataChannel.onmessage = function (event) {
           console.log(event);
         console.log("Got Data Channel Message:", event.data);
+        var data = JSON.parse(event.data);
+        // Check if it's coming from the right source
+        console.log(data);
+        console.log(data.lang)
+        if (data.lang != null && data.text != null){
+            translateText(data.lang, data.text, 'es')
+        }
       };
       
       dataChannel.onopen = function () {
@@ -192,8 +201,21 @@ export function createPeerConnection() {
         console.log("The Data Channel is Closed");
       };
 
-      peerConn.ondatachannel = function () {
-        dataChannel.send("help me");
+      peerConn.ondatachannel = function (e) {
+        console.log(e);
+        dataChannel = e.channel;
+        dataChannel.onerror = function (error) {
+            console.log("Data Channel Error:", error);
+          };
+          
+          dataChannel.onopen = function () {
+            dataChannel.send("Hello World!");
+            console.log('Data channel opened');
+          };
+          
+          dataChannel.onclose = function () {
+            console.log("The Data Channel is Closed");
+          };
         console.log('peerConn.ondatachannel event fired.');
         };
 }

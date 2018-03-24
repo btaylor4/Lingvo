@@ -7,6 +7,24 @@ import {getDataChannel} from './client'
 var socket = io.connect('http://' + document.domain + ':' + location.port);
 var dataChannel = '';
 
+export function translateText(sourceLang, sourceText, targetLang) {
+  var url = "https://translate.googleapis.com/translate_a/single?client=gtx&sl=" 
+  + sourceLang + "&tl=" + targetLang + "&dt=t&q=" + encodeURI(sourceText);
+
+  axios.get(url).then(response => {
+    if(response.data != null){
+      var result = response.data;
+      console.log(result);
+      var translatedText = result[0][0][0];
+      console.log(translatedText);
+
+      //Change overlaid text html here
+      $('.video-overlay').text(translatedText);
+    }
+    });
+}
+
+
 export default class Translation extends React.Component {
   constructor() {
     super()
@@ -16,11 +34,10 @@ export default class Translation extends React.Component {
       recognition : {}
     }
     this.enableTranslation = this.enableTranslation.bind(this);
-    this.translateText = this.translateText.bind(this);
-    this.testTranslateText = this.testTranslateText.bind(this);
   }
 
   componentDidMount() {
+    $('#overlays').text('some random text to display');
     if (!('webkitSpeechRecognition' in window)) {
       console.log('Upgrade browser');
     } else {
@@ -54,38 +71,12 @@ export default class Translation extends React.Component {
     }
   }
 
-  testTranslateText() {
-    this.translateText('en', 'Hello my name is rob', 'es');
-  }
-
-  // Format to automatically set handlers
-  translateText(sourceLang, sourceText, targetLang) {
-    var url = "https://translate.googleapis.com/translate_a/single?client=gtx&sl=" 
-    + sourceLang + "&tl=" + targetLang + "&dt=t&q=" + encodeURI(sourceText);
-
-    axios.get(url).then(response => {
-      if(response.data != null){
-        var result = response.data;
-        var translatedText = result[0][0][0];
-
-        var data = {
-          user: '1',
-          sourceText: sourceText,
-          translatedText : translatedText
-        }
-
-        dataChannel.send({data: data});
-      }
-      });
-  }
-
   render () {
     return <div>    <button type="button" onClick={this.enableTranslation}>Enable Translation</button>
     <button type="button" onClick={this.disableTranslation}>Disable Translation</button>
     <hr></hr>
     <p>Interim text: {this.state.interim_text}</p>
-    <p>Final text: {this.state.final_text}</p>
-    <button type="button" onClick={this.testTranslateText}>Test Translation Text</button></div>
+    <p>Final text: {this.state.final_text}</p></div>
   }
 
 

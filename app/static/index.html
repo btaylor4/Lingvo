@@ -5,6 +5,7 @@
     <!-- Latest compiled and minified bootstrap CSS -->
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
     <title>Creating a Full-Stack Python Application with NPM, React.js and Webpack</title>
+    <link href="{{ url_for('static',filename='css/video.css') }}" rel="stylesheet" type='text/css'>
     <!-- <script src="https://cdn.socket.io/socket.io-1.4.0.js"></script> -->
   </head>
   <body>
@@ -46,16 +47,23 @@
     
     </div>
     
-    <video autoplay id="sourceVideo"></video>
-    <div id="sourceVideoContent"></div>
+    <div class="outer-container">
+            <div class="inner-container">
+                <div class="video-overlay">Insert Translation Here</div>
+                <video autoplay id="sourceVideo"></video>
+            </div>
+        </div>
+        <div id="sourceVideoContent"></div>
     
-    <video autoplay id="remoteVideo"></video>
-    <div id="remoteVideoContent"></div>
+    <div id='remotevideo'>
+        <video autoplay id="remoteVideo"></video>
+        <div id="remoteVideoContent"></div>
+    </div>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/notify/0.4.2/notify.js"></script>
     <script src ="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js"></script>
     <!-- <script src="https://cdn.socket.io/socket.io-1.4.0.js"></script> -->
-    <script src="dist/bundle.js" type="text/javascript"></script>
+    <script src="{{ url_for('static',filename='dist/bundle.js') }}" type="text/javascript"></script>
   </body>
 </html>

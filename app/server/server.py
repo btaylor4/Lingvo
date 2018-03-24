@@ -9,7 +9,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import os
 import json
 
-app = Flask(__name__, static_folder="../static/dist", template_folder="../static")
+app = Flask(__name__, static_folder="../static", template_folder="../static")
 app.config['MONGO_DBNAME'] = "lingvo"
 app.config['MONGO_URI'] = "mongodb://lingvoadmin:webrtc@ds117758.mlab.com:17758/lingvo"
 app.secret_key = os.urandom(24)
