@@ -2,7 +2,10 @@
 import React from "react";
 import io from 'socket.io-client';
 import axios from 'axios';
-import dataChannel from './client.jsx'
+import {getDataChannel} from './client' 
+
+var socket = io.connect('http://' + document.domain + ':' + location.port);
+var dataChannel = '';
 
 export default class Translation extends React.Component {
   constructor() {
@@ -26,12 +29,20 @@ export default class Translation extends React.Component {
       recognition.interimResults = true;
       recognition.lang = 'en-US';
 
+      var username = window.localStorage.getItem('username');
+
       recognition.onresult = event => {
         for (var i = event.resultIndex; i < event.results.length; ++i) {
           if (event.results[i].isFinal) {
             var finalText = this.state.final_text;
             this.setState({final_text: finalText + event.results[i][0].transcript});
-            this.translateText('en', event.results[i][0].transcript, 'es');
+            var obj = {
+                username: username,
+                lang: recognition.lang,
+                text: this.state.final_text
+            }
+            dataChannel.send(JSON.stringify(obj));
+            // this.translateText('en', event.results[i][0].transcript, 'es');
           } else {
             var interimText = this.state.interim_text;
             this.setState({interim_text: event.results[i][0].transcript});
@@ -56,9 +67,6 @@ export default class Translation extends React.Component {
       if(response.data != null){
         var result = response.data;
         var translatedText = result[0][0][0];
-  
-        console.log('Source: '+ sourceText)
-        console.log('Translated: '+translatedText)
 
         var data = {
           user: '1',
@@ -83,6 +91,7 @@ export default class Translation extends React.Component {
 
   enableTranslation() {
     this.state.recognition.start();
+    dataChannel = getDataChannel();
   }
   
   disableTranslation() {

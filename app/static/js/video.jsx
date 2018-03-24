@@ -1,14 +1,11 @@
 // video.jsx
 import React from "react";
 import {createPeerConnection} from "./client"
-import io from 'socket.io-client';
 import Translation from './translate';
 
 export var localStream;
 navigator.getUserMedia = navigator.getUserMedia ||
     navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
-
-var socket = io.connect('localhost:5000/test');
     
 export default class StartVideo extends React.Component {
   render () {

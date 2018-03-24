@@ -8,12 +8,12 @@ import StartVideo from "./video"
 var socket = io.connect('http://' + document.domain + ':' + location.port);
 var remoteStream;
 var peerConn;
+var dataChannel;
 var connectedUser;
 var users;
 var sid;
 var session = window.localStorage;
 var username;
-export var dataChannel;
 
 var mediaConstraints = {
   'mandatory': {
@@ -170,6 +170,36 @@ export function createPeerConnection() {
   };
 
   peerConn.addStream(localStream);
+
+    //Set data channel here
+
+    dataChannel = peerConn.createDataChannel('translation', {reliable: false});
+    dataChannel.onerror = function (error) {
+        console.log("Data Channel Error:", error);
+      };
+      
+      dataChannel.onmessage = function (event) {
+          console.log(event);
+        console.log("Got Data Channel Message:", event.data);
+      };
+      
+      dataChannel.onopen = function () {
+        dataChannel.send("Hello World!");
+        console.log('Data channel opened');
+      };
+      
+      dataChannel.onclose = function () {
+        console.log("The Data Channel is Closed");
+      };
+
+      peerConn.ondatachannel = function () {
+        dataChannel.send("help me");
+        console.log('peerConn.ondatachannel event fired.');
+        };
+}
+
+export function getDataChannel() {
+    return dataChannel;
 }
 
 class Card extends React.Component {
@@ -219,37 +249,6 @@ class SearchBar extends React.Component {
     this.props.onUserInput(this.refs.filterTextInput);
   }
   
-//Code to support data communication. Used for sending translated data
-
-function registerDataChannel() {
-  var dataChannelOptions = {
-    ordered: true,
-    maxRetransmitTime: 1000, // millseconds
-  }
-  
-  dataChannel = peerConn.createDataChannel('translations', dataChannelOptions);
-  
-  // register callbacks
-  dataChannel.onerror = error => {
-    console.log('Data Channel Error' + error);
-  }
-  
-  dataChannel.onmessage = event => {
-    console.log('Got data channel message', event.data);
-    //Route event information through here
-  }
-  
-  dataChannel.onopen = () => {
-    dataChannel.send('Opened data channel');
-  }
-  
-  dataChannel.onclose = () => {
-    console.log('Data channel is now closed');
-  }
-}
-
-
-export default class ConnectButton extends React.Component {
   render() {
     return <form>
         <input
@@ -273,14 +272,6 @@ class FilteredCards extends React.Component {
     this.setState({
       filterText: text
     })
-}
-
-
-  connect() {
-    createPeerConnection();  
-    peerConn.createOffer(setLocalAndSendMessage, 
-      errorCallback, 
-      mediaConstraints);
   }
   
   render() {
