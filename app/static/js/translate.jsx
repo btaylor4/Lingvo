@@ -5,7 +5,11 @@ import axios from 'axios';
 import {getDataChannel} from './client'
 import Select from 'react-select';
 
-var socket = io.connect('http://' + document.domain + ':' + location.port);
+var protocol = 'https://'
+if (location.hostname === "localhost" || location.hostname === "127.0.0.1"){
+    protocol = 'http://'
+}
+socket = io.connect(protocol + document.domain + ':' + location.port);
 var dataChannel = '';
 
 // Get language information
