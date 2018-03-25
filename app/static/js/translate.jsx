@@ -2,14 +2,20 @@
 import React from "react";
 import io from 'socket.io-client';
 import axios from 'axios';
-import {getDataChannel} from './client' 
+import {getDataChannel} from './client'
+import Select from 'react-select';
 
 var socket = io.connect('http://' + document.domain + ':' + location.port);
 var dataChannel = '';
 
-export function translateText(sourceLang, sourceText, targetLang) {
+// Get language information
+var languages = [{'English': 'en-US'}, {'Dutch':'nl-NL'}, {'Spanish':'es'}]
+
+var selectedLanguage = '';
+
+export function translateText(sourceLang, sourceText) {
   var url = "https://translate.googleapis.com/translate_a/single?client=gtx&sl=" 
-  + sourceLang + "&tl=" + targetLang + "&dt=t&q=" + encodeURI(sourceText);
+  + sourceLang + "&tl=" + selectedLanguage + "&dt=t&q=" + encodeURI(sourceText);
 
   axios.get(url).then(response => {
     if(response.data != null){
@@ -31,9 +37,11 @@ export default class Translation extends React.Component {
     this.state = {
       interim_text : "",
       final_text : "",
-      recognition : {}
+      recognition : {},
+      selectedLanguage: ''
     }
     this.enableTranslation = this.enableTranslation.bind(this);
+    this.handleLanguageChange = this.handleLanguageChange.bind(this);
   }
 
   componentDidMount() {
@@ -44,7 +52,6 @@ export default class Translation extends React.Component {
       var recognition = new webkitSpeechRecognition();
       recognition.continuous = true;
       recognition.interimResults = true;
-      recognition.lang = 'en-US';
 
       var username = window.localStorage.getItem('username');
 
@@ -53,16 +60,22 @@ export default class Translation extends React.Component {
           if (event.results[i].isFinal) {
             var finalText = this.state.final_text;
             this.setState({final_text: finalText + event.results[i][0].transcript});
-            var obj = {
-                username: username,
-                lang: recognition.lang,
-                text: this.state.final_text
-            }
-            dataChannel.send(JSON.stringify(obj));
+            // var obj = {
+            //     username: username,
+            //     lang: selectedLanguage,
+            //     text: this.state.final_text
+            // }
+            // dataChannel.send(JSON.stringify(obj));
             // this.translateText('en', event.results[i][0].transcript, 'es');
           } else {
             var interimText = this.state.interim_text;
             this.setState({interim_text: event.results[i][0].transcript});
+            var obj = {
+                username: username,
+                lang: selectedLanguage,
+                text: this.state.interim_text
+            }
+            dataChannel.send(JSON.stringify(obj));
           }
         }
       }
@@ -71,10 +84,27 @@ export default class Translation extends React.Component {
     }
   }
 
+  handleLanguageChange (e) {
+      console.log(e);
+      this.setState({selectedLanguage: e.value});
+      selectedLanguage = e.value;
+  }
+
   render () {
+
+    const value = this.state.selectedLanguage;
+
     return <div>    <button type="button" onClick={this.enableTranslation}>Enable Translation</button>
     <button type="button" onClick={this.disableTranslation}>Disable Translation</button>
     <hr></hr>
+    <Select
+        name="select-language"
+        value={value}
+        onChange={this.handleLanguageChange}
+        options={languages.map(x => {
+            return {value: x[Object.keys(x)[0]], label: Object.keys(x)[0]}
+        })}
+        />
     <p>Interim text: {this.state.interim_text}</p>
     <p>Final text: {this.state.final_text}</p></div>
   }
