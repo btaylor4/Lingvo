@@ -28,12 +28,13 @@ export function translateText(sourceLang, sourceText, interim) {
       // Get current text
       var currentFinalCaption = $(".video-overlay--final").text();
       console.log(currentFinalCaption);
-      if (interim){
+      if (interim) {
         $(".video-overlay--interim").text(translatedText);
-      }
-      else{
-            //Change overlaid text html here
-        $(".video-overlay--final").text(currentFinalCaption +" "+ translatedText);
+      } else {
+        //Change overlaid text html here
+        $(".video-overlay--final").text(
+          currentFinalCaption + " " + translatedText
+        );
       }
     }
   });
@@ -63,25 +64,24 @@ export default class Translation extends React.Component {
       var username = window.localStorage.getItem("username");
 
       recognition.onresult = event => {
-        var interimText = '';
+        var interimText = "";
         for (var i = event.resultIndex; i < event.results.length; ++i) {
+            console.log(event.results);
           if (event.results[i].isFinal) {
             var finalText = this.state.final_text;
             this.setState({
               final_text: event.results[i][0].transcript
             });
             var obj = {
-                username: username,
-                lang: selectedLanguage,
-                text: this.state.final_text,
-                interim: false
-              };
-            console.log('final-text: '+event.results[i][0].transcript);
+              username: username,
+              lang: selectedLanguage,
+              text: this.state.final_text,
+              interim: false
+            };
+            console.log("final-text: " + event.results[i][0].transcript);
             dataChannel.send(JSON.stringify(obj));
-
-            
           } else {
-            interimText = interimText + ' ' + event.results[i][0].transcript ;
+            interimText = interimText + " " + event.results[i][0].transcript;
             var obj = {
               username: username,
               lang: selectedLanguage,
@@ -92,23 +92,23 @@ export default class Translation extends React.Component {
             dataChannel.send(JSON.stringify(obj));
           }
         }
+      };
 
-        recognition.onerror = event => {
-            console.log('Speech Recognition error: '+ event.message);
-        }
+      recognition.onerror = event => {
+        console.log("Speech Recognition error: " + event.message);
+      };
 
-        recognition.onstart = event =>{
-            console.log('Starting translation');
-        }
+      recognition.onstart = event => {
+        console.log("Starting translation");
+      };
 
-        recognition.onend = event => {
-            console.log('Speech ended: '+event.message);
-            console.log('Restarting speech recognition')
-            var tempRecognition = this.state.recognition;
-            tempRecognition.stop();
-            tempRecognition.start();
-            this.setState({recognition:tempRecognition});
-        }
+      recognition.onend = event => {
+        console.log("Speech ended: " + event.message);
+        console.log("Restarting speech recognition");
+        var tempRecognition = this.state.recognition;
+        tempRecognition.stop();
+        tempRecognition.start();
+        this.setState({ recognition: tempRecognition });
       };
 
       this.setState({ recognition: recognition });
