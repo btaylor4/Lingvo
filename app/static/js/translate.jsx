@@ -66,7 +66,7 @@ if (!("webkitSpeechRecognition" in window)) {
         };
         console.log("final-text: " + event.results[i][0].transcript);
         dataChannel.send(JSON.stringify(obj));
-        this.restartRecognition();
+        restartRecognition();
         } else {
         interimText = interimText + " " + event.results[i][0].transcript;
         var obj = {
