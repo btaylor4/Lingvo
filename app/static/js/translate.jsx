@@ -58,9 +58,6 @@ if (!("webkitSpeechRecognition" in window)) {
         console.log(event.results);
         if (event.results[i].isFinal) {
         var finalText = this.state.final_text;
-        this.setState({
-            final_text: event.results[i][0].transcript
-        });
         var obj = {
             username: username,
             lang: selectedLanguage,
