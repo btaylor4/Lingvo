@@ -120,7 +120,6 @@ export default class Translation extends React.Component {
     this.enableTranslation = this.enableTranslation.bind(this);
     this.disableTranslation = this.disableTranslation.bind(this);
     this.handleLanguageChange = this.handleLanguageChange.bind(this);
-    this.restartRecognition = this.restartRecognition.bind(this);
   }
 
   // De-reactifying 
