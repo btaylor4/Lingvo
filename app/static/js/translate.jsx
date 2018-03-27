@@ -97,21 +97,15 @@ if (!("webkitSpeechRecognition" in window)) {
     recognition.onend = event => {
     console.log("Speech ended: " + event.message);
     // this.restartRecognition();
-    var tempRecognition = this.state.recognition;
-    tempRecognition.start();
-    this.setState({ recognition: tempRecognition });
+    recognition.start();
     };
-
-    this.setState({ recognition: recognition });
 }
 
   function restartRecognition() {
     console.log("Restarting speech recognition");
-    var tempRecognition = this.state.recognition;
-    tempRecognition.stop();
+    recognition.stop();
     console.log('temporary call between stop and start');
-    tempRecognition.start();
-    this.setState({ recognition: tempRecognition });
+    recognition.start();
   }
 
 
