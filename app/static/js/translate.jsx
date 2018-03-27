@@ -6,6 +6,7 @@ import Select from "react-select";
 
 var dataChannel = "";
 var recognition = {};
+var finalText = '';
 
 // Get language information
 var languages = [{ English: "en-US" }, { Dutch: "nl-NL" }, { Spanish: "es" }];
@@ -57,11 +58,10 @@ if (!("webkitSpeechRecognition" in window)) {
     for (var i = event.resultIndex; i < event.results.length; ++i) {
         console.log(event.results);
         if (event.results[i].isFinal) {
-        var finalText = this.state.final_text;
         var obj = {
             username: username,
             lang: selectedLanguage,
-            text: this.state.final_text,
+            text: event.results[i][0].transcript,
             interim: false
         };
         console.log("final-text: " + event.results[i][0].transcript);
