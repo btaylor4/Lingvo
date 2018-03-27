@@ -40,6 +40,8 @@ export function translateText(sourceLang, sourceText, interim) {
   });
 }
 
+// De reactifying
+
 export default class Translation extends React.Component {
   constructor() {
     super();
@@ -51,7 +53,10 @@ export default class Translation extends React.Component {
     this.enableTranslation = this.enableTranslation.bind(this);
     this.disableTranslation = this.disableTranslation.bind(this);
     this.handleLanguageChange = this.handleLanguageChange.bind(this);
+    this.restartRecognition = this.restartRecognition.bind(this);
   }
+
+  // De-reactifying
 
   componentDidMount() {
     if (!("webkitSpeechRecognition" in window)) {
@@ -80,6 +85,7 @@ export default class Translation extends React.Component {
             };
             console.log("final-text: " + event.results[i][0].transcript);
             dataChannel.send(JSON.stringify(obj));
+            this.restartRecognition();
           } else {
             interimText = interimText + " " + event.results[i][0].transcript;
             var obj = {
@@ -102,17 +108,30 @@ export default class Translation extends React.Component {
         console.log("Starting translation");
       };
 
+      recognition.onpause = event => {
+        console.log("Speech paused");
+        // this.restartRecognition();
+      }
+
       recognition.onend = event => {
         console.log("Speech ended: " + event.message);
-        console.log("Restarting speech recognition");
+        // this.restartRecognition();
         var tempRecognition = this.state.recognition;
-        tempRecognition.stop();
         tempRecognition.start();
         this.setState({ recognition: tempRecognition });
       };
 
       this.setState({ recognition: recognition });
     }
+  }
+
+  restartRecognition() {
+    console.log("Restarting speech recognition");
+    var tempRecognition = this.state.recognition;
+    tempRecognition.stop();
+    console.log('temporary call between stop and start');
+    tempRecognition.start();
+    this.setState({ recognition: tempRecognition });
   }
 
   handleLanguageChange(e) {
@@ -153,7 +172,7 @@ export default class Translation extends React.Component {
 
   disableTranslation() {
     var recognition = this.state.recognition;
-    recognition.stop();
+    recognition.abort();
     this.setState({ recognition: recognition });
   }
 }
