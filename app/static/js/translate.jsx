@@ -5,6 +5,7 @@ import { getDataChannel } from "./client";
 import Select from "react-select";
 
 var dataChannel = "";
+var recognition = {};
 
 // Get language information
 var languages = [{ English: "en-US" }, { Dutch: "nl-NL" }, { Spanish: "es" }];
@@ -42,6 +43,81 @@ export function translateText(sourceLang, sourceText, interim) {
 
 // De reactifying
 
+if (!("webkitSpeechRecognition" in window)) {
+    console.log("Upgrade browser");
+} else {
+    recognition = new webkitSpeechRecognition();
+    recognition.continuous = true;
+    recognition.interimResults = true;
+
+    var username = window.localStorage.getItem("username");
+
+    recognition.onresult = event => {
+    var interimText = "";
+    for (var i = event.resultIndex; i < event.results.length; ++i) {
+        console.log(event.results);
+        if (event.results[i].isFinal) {
+        var finalText = this.state.final_text;
+        this.setState({
+            final_text: event.results[i][0].transcript
+        });
+        var obj = {
+            username: username,
+            lang: selectedLanguage,
+            text: this.state.final_text,
+            interim: false
+        };
+        console.log("final-text: " + event.results[i][0].transcript);
+        dataChannel.send(JSON.stringify(obj));
+        this.restartRecognition();
+        } else {
+        interimText = interimText + " " + event.results[i][0].transcript;
+        var obj = {
+            username: username,
+            lang: selectedLanguage,
+            text: interimText,
+            interim: true
+        };
+        console.log("interim-text: " + interimText);
+        dataChannel.send(JSON.stringify(obj));
+        }
+    }
+    };
+
+    recognition.onerror = event => {
+    console.log("Speech Recognition error: " + event.message);
+    };
+
+    recognition.onstart = event => {
+    console.log("Starting translation");
+    };
+
+    recognition.onpause = event => {
+    console.log("Speech paused");
+    // this.restartRecognition();
+    }
+
+    recognition.onend = event => {
+    console.log("Speech ended: " + event.message);
+    // this.restartRecognition();
+    var tempRecognition = this.state.recognition;
+    tempRecognition.start();
+    this.setState({ recognition: tempRecognition });
+    };
+
+    this.setState({ recognition: recognition });
+}
+
+  function restartRecognition() {
+    console.log("Restarting speech recognition");
+    var tempRecognition = this.state.recognition;
+    tempRecognition.stop();
+    console.log('temporary call between stop and start');
+    tempRecognition.start();
+    this.setState({ recognition: tempRecognition });
+  }
+
+
 export default class Translation extends React.Component {
   constructor() {
     super();
@@ -56,83 +132,7 @@ export default class Translation extends React.Component {
     this.restartRecognition = this.restartRecognition.bind(this);
   }
 
-  // De-reactifying
-
-  componentDidMount() {
-    if (!("webkitSpeechRecognition" in window)) {
-      console.log("Upgrade browser");
-    } else {
-      var recognition = new webkitSpeechRecognition();
-      recognition.continuous = true;
-      recognition.interimResults = true;
-
-      var username = window.localStorage.getItem("username");
-
-      recognition.onresult = event => {
-        var interimText = "";
-        for (var i = event.resultIndex; i < event.results.length; ++i) {
-            console.log(event.results);
-          if (event.results[i].isFinal) {
-            var finalText = this.state.final_text;
-            this.setState({
-              final_text: event.results[i][0].transcript
-            });
-            var obj = {
-              username: username,
-              lang: selectedLanguage,
-              text: this.state.final_text,
-              interim: false
-            };
-            console.log("final-text: " + event.results[i][0].transcript);
-            dataChannel.send(JSON.stringify(obj));
-            this.restartRecognition();
-          } else {
-            interimText = interimText + " " + event.results[i][0].transcript;
-            var obj = {
-              username: username,
-              lang: selectedLanguage,
-              text: interimText,
-              interim: true
-            };
-            console.log("interim-text: " + interimText);
-            dataChannel.send(JSON.stringify(obj));
-          }
-        }
-      };
-
-      recognition.onerror = event => {
-        console.log("Speech Recognition error: " + event.message);
-      };
-
-      recognition.onstart = event => {
-        console.log("Starting translation");
-      };
-
-      recognition.onpause = event => {
-        console.log("Speech paused");
-        // this.restartRecognition();
-      }
-
-      recognition.onend = event => {
-        console.log("Speech ended: " + event.message);
-        // this.restartRecognition();
-        var tempRecognition = this.state.recognition;
-        tempRecognition.start();
-        this.setState({ recognition: tempRecognition });
-      };
-
-      this.setState({ recognition: recognition });
-    }
-  }
-
-  restartRecognition() {
-    console.log("Restarting speech recognition");
-    var tempRecognition = this.state.recognition;
-    tempRecognition.stop();
-    console.log('temporary call between stop and start');
-    tempRecognition.start();
-    this.setState({ recognition: tempRecognition });
-  }
+  // De-reactifying 
 
   handleLanguageChange(e) {
     console.log(e);
@@ -164,15 +164,12 @@ export default class Translation extends React.Component {
   }
 
   enableTranslation() {
-    var recognition = this.state.recognition;
     recognition.start();
-    this.setState({ recognition: recognition });
     dataChannel = getDataChannel();
   }
 
   disableTranslation() {
-    var recognition = this.state.recognition;
     recognition.abort();
-    this.setState({ recognition: recognition });
   }
 }
+
