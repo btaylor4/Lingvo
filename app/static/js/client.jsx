@@ -173,6 +173,10 @@ export function createPeerConnection() {
     console.log("remote stream added");
     remotevid.src = window.URL.createObjectURL(evt.stream);
     remoteStream = evt.stream;
+
+    // Change css 
+    $('.inner-container').attr('class','inner-container__after-call');
+    $('.outer-container').attr('class','outer-container__after-call');
   };
 
   peerConn.addStream(localStream);
@@ -190,10 +194,8 @@ export function createPeerConnection() {
         console.log("Got Data Channel Message:", event.data);
         var data = JSON.parse(event.data);
         // Check if it's coming from the right source
-        console.log(data);
-        console.log(data.lang)
-        if (data.lang != null && data.text != null){
-            translateText(data.lang, data.text, 'es')
+        if (data.lang != null && data.text != null && data.interim != null){
+            translateText(data.lang, data.text, data.interim);
         }
       };
       

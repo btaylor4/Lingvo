@@ -9,9 +9,9 @@ var dataChannel = "";
 // Get language information
 var languages = [{ English: "en-US" }, { Dutch: "nl-NL" }, { Spanish: "es" }];
 
-var selectedLanguage = "";
+var selectedLanguage = "en-US";
 
-export function translateText(sourceLang, sourceText) {
+export function translateText(sourceLang, sourceText, interim) {
   var url =
     "https://translate.googleapis.com/translate_a/single?client=gtx&sl=" +
     sourceLang +
@@ -26,14 +26,14 @@ export function translateText(sourceLang, sourceText) {
       var translatedText = result[0][0][0];
 
       // Get current text
-      var currentCaption = $(".video-overlay").text();
-      console.log(currentCaption);
-      if (currentCaption.length > 40) {
-        //Change overlaid text html here
-        $(".video-overlay").text(translatedText);
-      } else {
-        //Change overlaid text html here
-        $(".video-overlay").text(currentCaption + " " + translatedText);
+      var currentFinalCaption = $(".video-overlay--final").text();
+      console.log(currentFinalCaption);
+      if (interim){
+        $(".video-overlay--interim").text(translatedText);
+      }
+      else{
+            //Change overlaid text html here
+        $(".video-overlay--final").text(currentFinalCaption +" "+ translatedText);
       }
     }
   });
@@ -43,10 +43,9 @@ export default class Translation extends React.Component {
   constructor() {
     super();
     this.state = {
-      interim_text: "",
       final_text: "",
       recognition: {},
-      selectedLanguage: ""
+      selectedLanguage: "en-US"
     };
     this.enableTranslation = this.enableTranslation.bind(this);
     this.disableTranslation = this.disableTranslation.bind(this);
@@ -64,22 +63,51 @@ export default class Translation extends React.Component {
       var username = window.localStorage.getItem("username");
 
       recognition.onresult = event => {
+        var interimText = '';
         for (var i = event.resultIndex; i < event.results.length; ++i) {
           if (event.results[i].isFinal) {
             var finalText = this.state.final_text;
             this.setState({
-              final_text: finalText + event.results[i][0].transcript
+              final_text: event.results[i][0].transcript
             });
+            var obj = {
+                username: username,
+                lang: selectedLanguage,
+                text: this.state.final_text,
+                interim: false
+              };
+            console.log('final-text: '+event.results[i][0].transcript);
+            dataChannel.send(JSON.stringify(obj));
+
+            
           } else {
-            var interimText = this.state.interim_text;
-            this.setState({ interim_text: event.results[i][0].transcript });
+            interimText = interimText + ' ' + event.results[i][0].transcript ;
             var obj = {
               username: username,
               lang: selectedLanguage,
-              text: this.state.interim_text
+              text: interimText,
+              interim: true
             };
+            console.log("interim-text: " + interimText);
             dataChannel.send(JSON.stringify(obj));
           }
+        }
+
+        recognition.onerror = event => {
+            console.log('Speech Recognition error: '+ event.message);
+        }
+
+        recognition.onstart = event =>{
+            console.log('Starting translation');
+        }
+
+        recognition.onend = event => {
+            console.log('Speech ended: '+event.message);
+            console.log('Restarting speech recognition')
+            var tempRecognition = this.state.recognition;
+            tempRecognition.stop();
+            tempRecognition.start();
+            this.setState({recognition:tempRecognition});
         }
       };
 
@@ -112,7 +140,6 @@ export default class Translation extends React.Component {
             return { value: x[Object.keys(x)[0]], label: Object.keys(x)[0] };
           })}
         />
-        <p>Interim text: {this.state.interim_text}</p>
       </div>
     );
   }
