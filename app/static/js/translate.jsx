@@ -155,6 +155,7 @@ export default class Translation extends React.Component {
 
   enableTranslation() {
     recognition.start();
+    interruptAudio();
     dataChannel = getDataChannel();
   }
 
@@ -163,3 +164,9 @@ export default class Translation extends React.Component {
   }
 }
 
+function interruptAudio() {  
+    recognition.stop();  
+    // Every ten seconds
+    console.log('Audio interrupt');
+    setTimeout(interruptAudio, 10000);
+}
