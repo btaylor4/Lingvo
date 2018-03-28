@@ -108,8 +108,8 @@ function notify(evt) {
 
 socket.on('message', onMessage)
 function onMessage(evt) {
-  // console.log("Client has recieved a message");
-  // console.log(evt);
+  console.log("Client has recieved a message");
+  console.log(evt);
   switch(evt.type) {
     case 'offer':
       // We reieve a call
