@@ -6,7 +6,8 @@ import Select from "react-select";
 
 var dataChannel = "";
 var recognition = {};
-var finalText = '';
+var interimText = "";
+var finalText = "";
 
 // Get language information
 var languages = [{ English: "en-US" }, { Dutch: "nl-NL" }, { Spanish: "es" }];
@@ -29,14 +30,21 @@ export function translateText(sourceLang, sourceText, interim) {
 
       // Get current text
       var currentFinalCaption = $(".video-overlay--final").text();
+
+      var captions = currentFinalCaption.split(" ");
       console.log(currentFinalCaption);
-      if (interim) {
-        $(".video-overlay--interim").text(translatedText);
+      if (!interim) {
+        if (captions.length > 20) {
+          $(".video-overlay--final").text(
+            currentFinalCaption.split(" ", 10).join(" ") + " " + translatedText
+          );
+        } else {
+          $(".video-overlay--final").text(
+            currentFinalCaption + " " + translatedText
+          );
+        }
       } else {
-        //Change overlaid text html here
-        $(".video-overlay--final").text(
-          currentFinalCaption + " " + translatedText
-        );
+        $(".video-overlay--interim").text(translatedText);
       }
     }
   });
@@ -45,69 +53,68 @@ export function translateText(sourceLang, sourceText, interim) {
 // De reactifying
 
 if (!("webkitSpeechRecognition" in window)) {
-    console.log("Upgrade browser");
+  console.log("Upgrade browser");
 } else {
-    recognition = new webkitSpeechRecognition();
-    recognition.continuous = true;
-    recognition.interimResults = true;
+  recognition = new webkitSpeechRecognition();
+  recognition.continuous = true;
+  recognition.interimResults = true;
 
-    var username = window.localStorage.getItem("username");
+  var username = window.localStorage.getItem("username");
 
-    recognition.onresult = event => {
-    var interimText = "";
+  recognition.onresult = event => {
+    interimText = "";
     for (var i = event.resultIndex; i < event.results.length; ++i) {
-        console.log(event.results);
-        if (event.results[i].isFinal) {
+      console.log(event.results);
+      if (event.results[i].isFinal) {
         var obj = {
-            username: username,
-            lang: selectedLanguage,
-            text: event.results[i][0].transcript,
-            interim: false
+          username: username,
+          lang: selectedLanguage,
+          text: event.results[i][0].transcript,
+          interim: false
         };
         console.log("final-text: " + event.results[i][0].transcript);
         dataChannel.send(JSON.stringify(obj));
         restartRecognition();
-        } else {
+      } else {
         interimText = interimText + " " + event.results[i][0].transcript;
         var obj = {
-            username: username,
-            lang: selectedLanguage,
-            text: interimText,
-            interim: true
+          username: username,
+          lang: selectedLanguage,
+          text: interimText,
+          interim: true
         };
         console.log("interim-text: " + interimText);
         dataChannel.send(JSON.stringify(obj));
-        }
+      }
     }
-    };
+  };
 
-    recognition.onerror = event => {
+  recognition.onerror = event => {
     console.log("Speech Recognition error: " + event.message);
-    };
+  };
 
-    recognition.onstart = event => {
+  recognition.onstart = event => {
     console.log("Starting translation");
-    };
+  };
 
-    recognition.onpause = event => {
+  recognition.onspeechend = event => {
     console.log("Speech paused");
     // this.restartRecognition();
-    }
+  };
 
-    recognition.onend = event => {
+  recognition.onend = event => {
     console.log("Speech ended: " + event.message);
     // this.restartRecognition();
     recognition.start();
-    };
+  };
 }
 
-  function restartRecognition() {
-    console.log("Restarting speech recognition");
-    recognition.stop();
-    console.log('temporary call between stop and start');
-    recognition.start();
-  }
-
+function restartRecognition() {
+  console.log("Restarting speech recognition");
+  recognition.stop();
+  console.log("temporary call between stop and start");
+  recognition.start();
+}
 
 export default class Translation extends React.Component {
   constructor() {
@@ -122,7 +129,7 @@ export default class Translation extends React.Component {
     this.handleLanguageChange = this.handleLanguageChange.bind(this);
   }
 
-  // De-reactifying 
+  // De-reactifying
 
   handleLanguageChange(e) {
     console.log(e);
@@ -156,10 +163,10 @@ export default class Translation extends React.Component {
   enableTranslation() {
     recognition.start();
     window.setInterval(function() {
-        recognition.stop();
-        console.log('Audio interrupt');
-        console.log('starting recognition');
-        recognition.start();
+      recognition.stop();
+      console.log("Audio interrupt");
+      console.log("starting recognition");
+      recognition.start();
     }, 10000);
     dataChannel = getDataChannel();
   }
