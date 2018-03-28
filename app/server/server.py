@@ -122,6 +122,12 @@ def handle_message(message): # server has recieved a message from a client
             "type": "session", 
             "sid": request.sid
         })
+
+    elif(message["type"] == "leave"):
+        sendToRoom(socketio, {
+            "type": "leave",
+            "room": connectedUsers[message["id"]]
+        })
         
 @socketio.on('audio', namespace='/test')
 def handle_audio(data):

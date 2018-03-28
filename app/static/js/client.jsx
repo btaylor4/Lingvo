@@ -137,6 +137,12 @@ function onMessage(evt) {
       sid = evt.sid;
       username = session.getItem('username');
       break;
+
+    case 'leave':
+      // caller wants to leave us
+      connectedUser = null;
+      closeCall();
+      break; 
         
     default:
       break;
@@ -146,6 +152,10 @@ function onMessage(evt) {
 function onOffer(evt) {
   connectedUser = evt.username;
   // console.log("We recieved a call from " + connectedUser);
+
+  if(peerConn == null) {
+    createPeerConnection();
+  }
   
   peerConn.setRemoteDescription(new RTCSessionDescription(evt.offer)); // sets the discription of the other person calling us
   
@@ -267,6 +277,11 @@ export function getDataChannel() {
 
 class Card extends React.Component {
   call(name) {
+    if(peerConn == null) {
+      console.log("Peer connection is null!");
+      createPeerConnection();
+    }
+
     connectedUser = name;
     
     // We want to make a call to some one else
@@ -381,16 +396,27 @@ export class EndVideo extends React.Component {
       </div>
   }
 
-  endVideo() {
-    connectedUser = null; 
-
+  endVideo() { // we want to end the call
     if(peerConn != null) {
+      peerConn.close();
+      sendClientMessage({
+        type: "leave",
+        id: connectedUser
+      });
+
+      connectedUser = null;
       peerConn = null;
+      console.log("Peer connection is set to null!");
     }
 
-    if(remotevid != null) {
-      remotevid.src = null; 
-      remoteStream = null;
-    }
+    closeCall();
+  }
+}
+
+function closeCall() {
+  peerConn = null;
+  if(remotevid != null) {
+    remotevid.src = null; 
+    remoteStream = null;
   }
 }
