@@ -7,15 +7,11 @@ import {translateText} from "./translate"
 import io from 'socket.io-client';
 
 // variables
-<<<<<<< HEAD
 var protocol = 'https://'
 if (location.hostname === "localhost" || location.hostname === "127.0.0.1"){
     protocol = 'http://'
 }
 var socket = io.connect(protocol + document.domain + ':' + location.port);
-=======
-var socket = io.connect('https://' + document.domain + ':' + location.port);
->>>>>>> origin
 var remoteStream;
 var peerConn;
 var dataChannel;
