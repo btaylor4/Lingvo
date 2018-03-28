@@ -20,6 +20,7 @@ var users;
 var sid;
 var session = window.localStorage;
 var username;
+var remotevid;
 
 var mediaConstraints = {
   'mandatory': {
@@ -72,6 +73,39 @@ function onConnection() {
   }
 }
 
+function notify(evt) {
+  $.notify.addStyle('answer', {
+    html: 
+      "<div>" +
+        "<div>" +
+          "<div class='title' data-notify-html='title'/>" +
+          "<div class='buttons'>" +            
+            "<button class='yes' data-notify-text='button'></button>" +
+            "<button class='no'>Cancel</button>" +
+          "</div>" +
+        "</div>" +
+      "</div>"
+  });
+  
+  //listen for click events from this style
+  $(document).on('click', '.notifyjs-answer-base .no', function() {
+    $(this).trigger('notify-hide');
+  });
+  $(document).on('click', '.notifyjs-answer-base .yes', function() {
+    $(this).trigger('notify-hide');
+    onOffer(evt);
+  });
+
+  $.notify({
+    title: 'Accept call from ' + evt.username + '?',
+    button: 'Confirm'
+  }, { 
+    style: 'answer',
+    autoHide: false,
+    clickToHide: false
+  });
+}
+
 socket.on('message', onMessage)
 function onMessage(evt) {
   console.log("Client has recieved a message");
@@ -79,7 +113,7 @@ function onMessage(evt) {
   switch(evt.type) {
     case 'offer':
       // We reieve a call
-      onOffer(evt);
+      notify(evt);
       break;
     
     case 'answer':
@@ -95,14 +129,20 @@ function onMessage(evt) {
     
     case 'gotUsers':
       users = evt.users;
-      console.log(users);
+      // console.log(users);
       break;
       
     case 'session':
-      console.log("Got session")
+      // console.log("Got session")
       sid = evt.sid;
       username = session.getItem('username');
       break;
+
+    case 'leave':
+      // caller wants to leave us
+      connectedUser = null;
+      closeCall();
+      break; 
         
     default:
       break;
@@ -111,12 +151,16 @@ function onMessage(evt) {
 
 function onOffer(evt) {
   connectedUser = evt.username;
-  console.log("We recieved a call from " + connectedUser);
+  // console.log("We recieved a call from " + connectedUser);
+
+  if(peerConn == null) {
+    createPeerConnection();
+  }
   
   peerConn.setRemoteDescription(new RTCSessionDescription(evt.offer)); // sets the discription of the other person calling us
   
   peerConn.createAnswer(function (answer) {
-    console.log("Creating answer");
+    // console.log("Creating answer");
     peerConn.setLocalDescription(answer);
     sendClientMessage({
       type: "answer",
@@ -127,7 +171,7 @@ function onOffer(evt) {
 }
 
 function onAnswer(evt) {
-  console.log("Answer event");
+  // console.log("Answer event");
   peerConn.setRemoteDescription(new RTCSessionDescription(evt)); // sets the discription of the other person calling us
 }
 
@@ -136,7 +180,7 @@ function errorCallback() {
 }
 
 function onCandidate(evt) {
-  console.log("Candidate event");
+  // console.log("Candidate event");
   if(evt!= null) {
     var candidate = new RTCIceCandidate(evt);
     peerConn.addIceCandidate(candidate);
@@ -149,7 +193,7 @@ function sendClientMessage(message) {
 }
 
 export function createPeerConnection() {
-  console.log("Creating PeerConnection")
+  // console.log("Creating PeerConnection")
   var pc_config = {
     'iceServers' :[{
     'url': 'stun:stun2.l.google.com:19302'
@@ -166,11 +210,11 @@ export function createPeerConnection() {
       });
     }
   };
-
-  var remotevid = document.getElementById('remoteVideo');
+  
+  remotevid = document.getElementById('remoteVideo');
 
   peerConn.onaddstream = function(evt) {
-    console.log("remote stream added");
+    // console.log("remote stream added");
     remotevid.src = window.URL.createObjectURL(evt.stream);
     remoteStream = evt.stream;
 
@@ -190,7 +234,7 @@ export function createPeerConnection() {
       };
       
       dataChannel.onmessage = function (event) {
-          console.log(event);
+        console.log(event);
         console.log("Got Data Channel Message:", event.data);
         var data = JSON.parse(event.data);
         // Check if it's coming from the right source
@@ -233,6 +277,11 @@ export function getDataChannel() {
 
 class Card extends React.Component {
   call(name) {
+    if(peerConn == null) {
+      console.log("Peer connection is null!");
+      createPeerConnection();
+    }
+
     connectedUser = name;
     
     // We want to make a call to some one else
@@ -265,7 +314,7 @@ class FriendCards extends React.Component {
     var list = [];
     
     for(var i = 0; i < users.length; i++) {
-      console.log(users[i].username);
+      // console.log(users[i].username);
       list.push(<Card key={i} name={users[i].username}></Card>);
     }
     
@@ -337,5 +386,37 @@ export default class Search extends React.Component {
       const element = <div>{list}</div>;
       ReactDOM.render(element, document.getElementById('cardholder'));
     }, 100);
+  }
+}
+
+export class EndVideo extends React.Component {
+  render() {
+    return <div>
+      <button type="button" onClick={this.endVideo}> End Call</button>
+      </div>
+  }
+
+  endVideo() { // we want to end the call
+    if(peerConn != null) {
+      peerConn.close();
+      sendClientMessage({
+        type: "leave",
+        id: connectedUser
+      });
+
+      connectedUser = null;
+      peerConn = null;
+      console.log("Peer connection is set to null!");
+    }
+
+    closeCall();
+  }
+}
+
+function closeCall() {
+  peerConn = null;
+  if(remotevid != null) {
+    remotevid.src = null; 
+    remoteStream = null;
   }
 }

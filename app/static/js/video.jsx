@@ -2,6 +2,7 @@
 import React from "react";
 import {createPeerConnection} from "./client"
 import Translation from './translate';
+import {EndVideo} from "./client"
 
 export var localStream;
 navigator.getUserMedia = navigator.getUserMedia ||
@@ -11,6 +12,7 @@ export default class StartVideo extends React.Component {
   render () {
     return <div>
       <button type="button" onClick={this.startVideo}>Start</button>
+      <EndVideo></EndVideo>
       <Translation></Translation>
       </div>
   }

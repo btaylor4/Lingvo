@@ -108,6 +108,7 @@ def handle_message(message): # server has recieved a message from a client
         })
         
     elif(message["type"] == "getSession"):
+        connectedUsers[message["user"]] = request.sid
         room = connectedUsers[message["user"]]
         
         # Not sure if this will work
@@ -120,6 +121,12 @@ def handle_message(message): # server has recieved a message from a client
         sendToClient(socketio, {
             "type": "session", 
             "sid": request.sid
+        })
+
+    elif(message["type"] == "leave"):
+        sendToRoom(socketio, {
+            "type": "leave",
+            "room": connectedUsers[message["id"]]
         })
         
 @socketio.on('audio', namespace='/test')
