@@ -3,11 +3,22 @@ import React from "react";
 import ReactDOM from "react-dom";
 import {localStream} from "./video";
 import StartVideo from "./video"
+import {translateText} from "./translate"
+import io from 'socket.io-client';
 
 // variables
+<<<<<<< HEAD
+var protocol = 'https://'
+if (location.hostname === "localhost" || location.hostname === "127.0.0.1"){
+    protocol = 'http://'
+}
+var socket = io.connect(protocol + document.domain + ':' + location.port);
+=======
 var socket = io.connect('https://' + document.domain + ':' + location.port);
+>>>>>>> origin
 var remoteStream;
 var peerConn;
+var dataChannel;
 var connectedUser;
 var users;
 var sid;
@@ -166,9 +177,62 @@ export function createPeerConnection() {
     console.log("remote stream added");
     remotevid.src = window.URL.createObjectURL(evt.stream);
     remoteStream = evt.stream;
+
+    // Change css 
+    $('.inner-container').attr('class','inner-container__after-call');
+    $('.outer-container').attr('class','outer-container__after-call');
   };
 
   peerConn.addStream(localStream);
+
+    //Set data channel here
+
+    dataChannel = peerConn.createDataChannel('translation', {reliable: true});
+    
+      dataChannel.onerror = function (error) {
+        console.log("Data Channel Error:", error);
+      };
+      
+      dataChannel.onmessage = function (event) {
+          console.log(event);
+        console.log("Got Data Channel Message:", event.data);
+        var data = JSON.parse(event.data);
+        // Check if it's coming from the right source
+        if (data.lang != null && data.text != null && data.interim != null){
+            translateText(data.lang, data.text, data.interim);
+        }
+      };
+      
+      dataChannel.onopen = function () {
+        dataChannel.send("Hello World!");
+        console.log('Data channel opened');
+      };
+      
+      dataChannel.onclose = function () {
+        console.log("The Data Channel is Closed");
+      };
+
+      peerConn.ondatachannel = function (e) {
+        console.log(e);
+        dataChannel = e.channel;
+        dataChannel.onerror = function (error) {
+            console.log("Data Channel Error:", error);
+          };
+          
+          dataChannel.onopen = function () {
+            dataChannel.send("Hello World!");
+            console.log('Data channel opened');
+          };
+          
+          dataChannel.onclose = function () {
+            console.log("The Data Channel is Closed");
+          };
+        console.log('peerConn.ondatachannel event fired.');
+        };
+}
+
+export function getDataChannel() {
+    return dataChannel;
 }
 
 class Card extends React.Component {

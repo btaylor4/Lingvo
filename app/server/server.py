@@ -1,7 +1,7 @@
 # server.py
 from flask import Flask, render_template, redirect, url_for, request, session
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
-from flask.ext.pymongo import PyMongo
+from flask_pymongo import PyMongo
 from flask_socketio import SocketIO
 from flask_socketio import send, emit
 from bson import json_util, ObjectId
@@ -9,7 +9,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import os
 import json
 
-app = Flask(__name__, static_folder="../static/dist", template_folder="../static")
+app = Flask(__name__, static_folder="../static", template_folder="../static")
 app.config['MONGO_DBNAME'] = "lingvo"
 app.config['MONGO_URI'] = "mongodb://lingvoadmin:webrtc@ds117758.mlab.com:17758/lingvo"
 app.secret_key = os.urandom(24)
@@ -122,7 +122,15 @@ def handle_message(message): # server has recieved a message from a client
             "sid": request.sid
         })
         
-@app.route('/register', methods=['GET', 'POST']) # sets up the page for registration
+@socketio.on('audio', namespace='/test')
+def handle_audio(data):
+  print('received' + str(data))
+
+  # Call to client speech api here
+  
+  # Have some sort of buffer queue
+
+@app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
         # construct user
