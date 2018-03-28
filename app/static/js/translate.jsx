@@ -155,18 +155,17 @@ export default class Translation extends React.Component {
 
   enableTranslation() {
     recognition.start();
-    interruptAudio();
+    window.setInterval(function() {
+        recognition.stop();
+        console.log('Audio interrupt');
+        console.log('starting recognition');
+        recognition.start();
+    }, 10000);
     dataChannel = getDataChannel();
   }
 
   disableTranslation() {
     recognition.abort();
+    window.clearInterval();
   }
-}
-
-function interruptAudio() {  
-    recognition.stop();  
-    // Every ten seconds
-    console.log('Audio interrupt');
-    setTimeout(interruptAudio, 10000);
 }
