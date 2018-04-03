@@ -105,22 +105,18 @@ def handle_message(message): # server has recieved a message from a client
                     "friends": json.loads(json_util.dumps(friends_list)),
                     "room": room
                 })
-        
+
     elif(message["type"] == "getRequests"):
         # get friend requests when a user logs in
         room = connectedUsers[message["user"]]
-        cursor = mongo.db.users.find({
-                'username': message["user"],
-                'friend_requests': { "$all": [] }
-                })
-
+        cursor = mongo.db.users.find_one({'username': message["user"]})
         if "friend_requests" in cursor:
-            requests = cursor["friend_requests"]
+            requests = list(cursor["friend_requests"])
 
             if room is not None:
                 sendToRoom(socketio, {
                     "type": "notifications",
-                    "notifications": requests,
+                    "requests": json.loads(json_util.dumps(requests)),
                     "room": room
                 })
 
@@ -130,7 +126,7 @@ def handle_message(message): # server has recieved a message from a client
 
         friend_notifications = None
         room = connectedUsers[message["receiver"]]
-        cursor = mongo.db.users.find({
+        cursor = mongo.db.users.find_one({
                 'username': message["receiver"],
                 'friend_requests': { "$all": [] }
                 })

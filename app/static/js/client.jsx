@@ -22,7 +22,7 @@ var session = window.localStorage;
 var username;
 var remotevid;
 var friendsList;
-var firend_requests;
+var friend_requests;
 
 var mediaConstraints = {
   'mandatory': {
@@ -84,7 +84,7 @@ function onConnection() {
     });
 
     $("#view-friends").click(function() {
-      console.log("I found friends!");
+      
     });
   }
 }
@@ -123,8 +123,8 @@ function notify(evt) {
 }
 
 function notifyFriendRequest(evt) {
-  $(".fa fa-globe").text(evt.requests.length);
-  $(".fa fa-globe").notify(evt.username + ' wants to be your friend.');
+  $("#friend-request-counter").text(" " + evt.requests.length);
+  $("#friend-request-counter").notify('New Friend Request');
 }
 
 function handleFriendAccept() {
@@ -173,7 +173,21 @@ function onMessage(evt) {
         
     case 'friend_request': // we receive a friend request
       friend_requests = evt.requests;
-      notifyFriendRequest();
+      notifyFriendRequest(evt);
+      break;
+
+    case 'notifications':
+      friend_requests = evt.requests;
+
+      var list = [];
+    
+      for(var i = 0; i < friend_requests .length; i++) {
+        list.push(<FriendRequest key={i} name={friend_requests[i]}></FriendRequest>);
+      }
+
+      const element = <div>{list}</div>;
+
+      ReactDOM.render(element, document.getElementById("dropdown-friends"));
       break;
 
     default:
@@ -322,8 +336,6 @@ class Card extends React.Component { //these will now be sending friend requests
       requester: session.getItem('username'),
       receiver: name
     });
-
-    console.log("Sent request!");
   }
 
   render() {
@@ -444,6 +456,26 @@ export default class Search extends React.Component {
       const element = <div>{list}</div>;
       ReactDOM.render(element, document.getElementById('cardholder'));
     }, 100);
+  }
+}
+
+class FriendRequest extends React.Component {
+  acceptRequest() {
+
+  }
+
+  denyRequest() {
+
+  }
+  
+  render() {
+    return <div>
+      {this.props.name}
+        <div className="button-options">
+          <button onClick={this.acceptRequest()}> Accept </button>
+          <button onClick={this.denyRequest()}> Decline </button>
+        </div>
+      </div>
   }
 }
 
