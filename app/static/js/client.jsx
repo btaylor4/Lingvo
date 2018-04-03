@@ -5,6 +5,7 @@ import {localStream} from "./video";
 import StartVideo from "./video"
 import {translateText} from "./translate"
 import io from 'socket.io-client';
+import NavBar from './nav'
 
 // variables
 var protocol = 'https://'
@@ -30,35 +31,10 @@ var mediaConstraints = {
 };
 
 // Components
-class LoginButton extends React.Component {
-  handleClick() {
-    window.localStorage.setItem('username', document.getElementById('username').value);
-  }
-  
-  render() {
-    return <button className="btn btn-default" onClick={this.handleClick}> Login </button>
-  }
-}
-
-class LoginForm extends React.Component {  
-  render() {
-    return <form method="POST">
-      <input id="username" type="text" placeholder="Username" name="username"/>
-        
-      <input id="password" type="password" placeholder="Password" name="password"/>
-        
-      <LoginButton></LoginButton>
-    </form>
-  }
-}
 
 socket.on('connect', onConnection)
 function onConnection() {
-  if(window.location.pathname == "/login") {
-    ReactDOM.render(<LoginForm />, document.getElementById("login-button"));
-  }
-  
-  else if(window.location.pathname == "/user-portal") {
+  if(window.location.pathname == "/user-portal") {
     ReactDOM.render(<StartVideo />, document.getElementById("sourceVideoContent"));
     ReactDOM.render(<Search />, document.getElementById("searchbar"));
     sendClientMessage({
