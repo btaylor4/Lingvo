@@ -20,14 +20,14 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
 
+connectedUsers = {}
+
 @login_manager.user_loader
 def load_user(user_id):
     user = mongo.db.users.find_one({"username": user_id})
     if not user:
         return None
     return User(user['_id'])
-    
-connectedUsers = {}
 
 class User():
     def __init__(self, username):
@@ -89,6 +89,88 @@ def handle_message(message): # server has recieved a message from a client
             "room": room
         })
         
+    elif(message["type"] == "getFriends"):
+        # get friends from database
+        room = connectedUsers[message["user"]]
+        cursor = mongo.db.users.find({
+                'username': message["user"],
+                'friends': { "$all": [] }
+                })
+
+        if "friends" in cursor:
+            friends_list = list(cursor["friends"])
+            if room is not None:
+                sendToRoom(socketio, {
+                    "type": "getFriends",
+                    "friends": json.loads(json_util.dumps(friends_list)),
+                    "room": room
+                })
+        
+    elif(message["type"] == "getRequests"):
+        # get friend requests when a user logs in
+        room = connectedUsers[message["user"]]
+        cursor = mongo.db.users.find({
+                'username': message["user"],
+                'friend_requests': { "$all": [] }
+                })
+
+        if "friend_requests" in cursor:
+            requests = cursor["friend_requests"]
+
+            if room is not None:
+                sendToRoom(socketio, {
+                    "type": "notifications",
+                    "notifications": requests,
+                    "room": room
+                })
+
+    elif(message["type"] == "friend_request"): #send the request
+        print("Requester " + message["requester"])
+        print("Reciever " + message["receiver"])
+
+        friend_notifications = None
+        room = connectedUsers[message["receiver"]]
+        cursor = mongo.db.users.find({
+                'username': message["receiver"],
+                'friend_requests': { "$all": [] }
+                })
+
+        if cursor is not None: # check if user exists
+            if "friend_requests" in cursor:
+                friend_notifications = cursor["friend_requests"]
+
+            if friend_notifications is not None: # check to see if they have a list yet
+                if message["requester"] not in friend_notifications: # check if users is already in list
+                    friend_notifications.append(message["requester"])
+                    mongo.db.users.update(
+                        { "username" : message["requester"]},
+                        { "$set": 
+                            {
+                                "friend_requests": friend_notifications
+                            } 
+                        }
+                    )
+
+            else:
+                friend_notifications = list()
+                friend_notifications.append(message["requester"])
+                mongo.db.users.update(
+                    { "username" : message["receiver"]},
+                    { "$set": 
+                        {
+                            "friend_requests": friend_notifications
+                        } 
+                    }
+                )
+
+        if room is not None:
+            sendToRoom(socketio, {
+                "type": "friend_request",
+                "requests": json.loads(json_util.dumps(friend_notifications)),
+                "username": message["requester"],
+                "room": room
+            }) 
+
     elif(message["type"] == "getUsers"):
         room = connectedUsers[message["user"]]
         

@@ -21,6 +21,8 @@ var sid;
 var session = window.localStorage;
 var username;
 var remotevid;
+var friendsList;
+var firend_requests;
 
 var mediaConstraints = {
   'mandatory': {
@@ -70,6 +72,20 @@ function onConnection() {
       type: 'getUsers',
       user: session.getItem('username')
     });
+
+    sendClientMessage({
+      type: 'getFriends',
+      user: session.getItem('username')
+    });
+
+    sendClientMessage({
+      type: 'getRequests',
+      user: session.getItem('username')
+    });
+
+    $("#view-friends").click(function() {
+      console.log("I found friends!");
+    });
   }
 }
 
@@ -104,6 +120,17 @@ function notify(evt) {
     autoHide: false,
     clickToHide: false
   });
+}
+
+function notifyFriendRequest(evt) {
+  $(".fa fa-globe").text(evt.requests.length);
+  $(".fa fa-globe").notify(evt.username + ' wants to be your friend.');
+}
+
+function handleFriendAccept() {
+  sendClientMessage({
+    type: "accept_request"
+  })
 }
 
 socket.on('message', onMessage)
@@ -144,6 +171,11 @@ function onMessage(evt) {
       closeCall();
       break; 
         
+    case 'friend_request': // we receive a friend request
+      friend_requests = evt.requests;
+      notifyFriendRequest();
+      break;
+
     default:
       break;
   }
@@ -275,7 +307,37 @@ export function getDataChannel() {
     return dataChannel;
 }
 
-class Card extends React.Component {
+function closeCall() {
+  peerConn = null;
+  if(remotevid != null) {
+    remotevid.src = null; 
+    remoteStream = null;
+  }
+}
+
+class Card extends React.Component { //these will now be sending friend requests
+  sendFriendRequest(name) {
+    sendClientMessage({
+      type: "friend_request",
+      requester: session.getItem('username'),
+      receiver: name
+    });
+
+    console.log("Sent request!");
+  }
+
+  render() {
+    return <div className="card" id={this.props.id}>
+              <div className="card-block">
+                <h4>{this.props.name}</h4> 
+                <p> This is where a partial bio would go! </p>
+                <button type="button" onClick={ (e) => this.sendFriendRequest(this.props.name, e) }> Send Friend Request</button>
+              </div>
+            </div>
+  }
+}
+
+class FriendCards extends React.Component {
   call(name) {
     if(peerConn == null) {
       console.log("Peer connection is null!");
@@ -297,28 +359,24 @@ class Card extends React.Component {
       errorCallback, 
       mediaConstraints);    
   }
-  
-  render() {
-    return <div className="card" id={this.props.id}>
-              <div className="card-block">
-                <h4>{this.props.name}</h4> 
-                <p> This is where a partial bio would go! </p>
-                <button type="button" onClick={ (e) => this.call(this.props.name, e) }> Call {this.props.name}</button>
-              </div>
-            </div>
-  }
-}
 
-class FriendCards extends React.Component {
   render() {
-    var list = [];
-    
-    for(var i = 0; i < users.length; i++) {
-      // console.log(users[i].username);
-      list.push(<Card key={i} name={users[i].username}></Card>);
-    }
-    
-    return <div>{list}</div>;
+    return <div className="col-sm-12">
+
+        <div className="col-sm-2">
+            <h3 className="fa fa-user fa-3x"></h3>
+        </div>
+
+        <div className="col-sm-8">
+          <h4>{this.props.name}</h4>
+        </div>
+
+        <div className="col-sm-2">
+          <br/>
+          <button type="button" onClick={ (e) => this.call(this.props.name, e) }> Call {this.props.name}</button>
+        </div>
+
+      </div>
   }
 }
 
@@ -410,13 +468,5 @@ export class EndVideo extends React.Component {
     }
 
     closeCall();
-  }
-}
-
-function closeCall() {
-  peerConn = null;
-  if(remotevid != null) {
-    remotevid.src = null; 
-    remoteStream = null;
   }
 }
