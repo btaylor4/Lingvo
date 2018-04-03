@@ -82,10 +82,6 @@ function onConnection() {
       type: 'getRequests',
       user: session.getItem('username')
     });
-
-    $("#view-friends").click(function() {
-      
-    });
   }
 }
 
@@ -127,12 +123,6 @@ function notifyFriendRequest(evt) {
   $("#friend-request-counter").notify('New Friend Request');
 }
 
-function handleFriendAccept() {
-  sendClientMessage({
-    type: "accept_request"
-  })
-}
-
 socket.on('message', onMessage)
 function onMessage(evt) {
   console.log("Client has recieved a message");
@@ -158,6 +148,12 @@ function onMessage(evt) {
       users = evt.users;
       // console.log(users);
       break;
+
+    case 'getFriends':
+      console.log("Got friends");
+      friendsList = evt.friends;
+      createFriendList();
+      break;
       
     case 'session':
       // console.log("Got session")
@@ -174,27 +170,46 @@ function onMessage(evt) {
     case 'friend_request': // we receive a friend request
       friend_requests = evt.requests;
       notifyFriendRequest(evt);
+      createDropdown();
       break;
 
     case 'notifications':
       const line = <hr/>
       friend_requests = evt.requests;
-
-      var list = [];
-    
-      for(var i = 0; i < friend_requests .length; i++) {
-        list.push(<FriendRequest key={i} name={friend_requests[i]}></FriendRequest>);
-        list.push(line);
-      }
-
-      const element = <div>{list}</div>;
-
-      ReactDOM.render(element, document.getElementById("dropdown-friends"));
+      createDropdown();      
       break;
 
     default:
       break;
   }
+}
+
+function createFriendList() {
+  const line = <hr/>
+  var list = [];
+    
+  for(var i = 0; i < friendsList.length; i++) {
+    list.push(<FriendCard key={i} name={friendsList[i]}></FriendCard>);
+    list.push(line);
+  }
+
+  const element = <div>{list}</div>;
+
+  ReactDOM.render(element, document.getElementById("friends-list"));
+}
+
+function createDropdown() {
+  const line = <hr/>
+  var list = [];
+    
+  for(var i = 0; i < friend_requests .length; i++) {
+    list.push(<FriendRequest key={i} name={friend_requests[i]}></FriendRequest>);
+    list.push(line);
+  }
+
+  const element = <div>{list}</div>;
+
+  ReactDOM.render(element, document.getElementById("dropdown-friends"));
 }
 
 function onOffer(evt) {
@@ -351,7 +366,7 @@ class Card extends React.Component { //these will now be sending friend requests
   }
 }
 
-class FriendCards extends React.Component {
+class FriendCard extends React.Component {
   call(name) {
     if(peerConn == null) {
       console.log("Peer connection is null!");
@@ -394,48 +409,6 @@ class FriendCards extends React.Component {
   }
 }
 
-class SearchBar extends React.Component {
-  onTextChange() {
-    this.props.onUserInput(this.refs.filterTextInput);
-  }
-  
-  render() {
-    return <form>
-        <input
-          type="text"
-          placeholder="Search..."
-          ref="filterTextInput"
-          onChange={this.onTextChange}
-        />
-      </form>
-  }
-}
-
-class FilteredCards extends React.Component {
-  getInitialState() {
-    return{
-      filteredText: ''
-    };
-  }
-  
-  handleUserInput(text) {
-    this.setState({
-      filterText: text
-    })
-  }
-  
-  render() {
-    return <div>
-      <SearchBar>
-        onUserInput ={this.handleUserInput}
-      </SearchBar>
-      <FriendCards>
-        listedUsers={this.props.listedUsers}
-      </FriendCards>
-    </div>
-  }
-}
-
 export default class Search extends React.Component {
   render() {
     return <form>
@@ -443,6 +416,7 @@ export default class Search extends React.Component {
           type="text"
           placeholder="Search..."
           onChange={this.onTextChange}
+          id="searchQuery"
         />
     </form>
   }
@@ -450,9 +424,11 @@ export default class Search extends React.Component {
   onTextChange() {
     setTimeout(function() {
       var list = [];
-    
+      var value =  document.getElementById("searchQuery").value;
+
       for(var i = 0; i < users.length; i++) {
-        list.push(<Card key={i} name={users[i].username} id={users[i]._id.$oid}></Card>);
+        if(users[i].username.includes(value) && value != "")
+          list.push(<Card key={i} name={users[i].username} id={users[i]._id.$oid}></Card>);
       }
     
       const element = <div>{list}</div>;
@@ -462,20 +438,28 @@ export default class Search extends React.Component {
 }
 
 class FriendRequest extends React.Component {
-  acceptRequest() {
-
+  acceptRequest(name) {
+    sendClientMessage({
+      type: "accept_friend_request",
+      acceptor: session.getItem("username"),
+      receiver: name
+    })
   }
 
-  denyRequest() {
-
+  denyRequest(name) {
+    sendClientMessage({
+      type: "decline_friend_request",
+      denier: session.getItem("username"),
+      receiver: name
+    })
   }
   
   render() {
     return <div>
       {this.props.name}
         <div className="button-options">
-          <button onClick={this.acceptRequest()}> Accept </button>
-          <button onClick={this.denyRequest()}> Decline </button>
+          <button onClick={(e) => this.acceptRequest(this.props.name, e)}> Accept </button>
+          <button onClick={(e) => this.denyRequest(this.props.name, e)}> Decline </button>
         </div>
       </div>
   }
