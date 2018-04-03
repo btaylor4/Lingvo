@@ -177,12 +177,14 @@ function onMessage(evt) {
       break;
 
     case 'notifications':
+      const line = <hr/>
       friend_requests = evt.requests;
 
       var list = [];
     
       for(var i = 0; i < friend_requests .length; i++) {
         list.push(<FriendRequest key={i} name={friend_requests[i]}></FriendRequest>);
+        list.push(line);
       }
 
       const element = <div>{list}</div>;

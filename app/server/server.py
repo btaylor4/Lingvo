@@ -122,18 +122,15 @@ def handle_message(message): # server has recieved a message from a client
 
     elif(message["type"] == "friend_request"): #send the request
         print("Requester " + message["requester"])
-        print("Reciever " + message["receiver"])
+        print("Receiver " + message["receiver"])
 
         friend_notifications = None
         room = connectedUsers[message["receiver"]]
-        cursor = mongo.db.users.find_one({
-                'username': message["receiver"],
-                'friend_requests': { "$all": [] }
-                })
-
+        cursor = mongo.db.users.find_one({'username': message["receiver"]})
+        
         if cursor is not None: # check if user exists
             if "friend_requests" in cursor:
-                friend_notifications = cursor["friend_requests"]
+                friend_notifications = list(cursor["friend_requests"])
 
             if friend_notifications is not None: # check to see if they have a list yet
                 if message["requester"] not in friend_notifications: # check if users is already in list
@@ -159,6 +156,7 @@ def handle_message(message): # server has recieved a message from a client
                     }
                 )
 
+        print(friend_notifications)
         if room is not None:
             sendToRoom(socketio, {
                 "type": "friend_request",
