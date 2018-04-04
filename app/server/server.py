@@ -220,6 +220,8 @@ def handle_message(message): # server has recieved a message from a client
                         }
                 )
 
+        receiver_friends = friends
+
         friends = None
         if acceptor_cursor is not None:
             if "friends" in acceptor_cursor:
@@ -260,6 +262,25 @@ def handle_message(message): # server has recieved a message from a client
                             }
                         }
                 )
+
+        acceptor_friends = friends
+
+        acceptor_room = connectedUsers[message["acceptor"]]
+        receiver_room = connectedUsers[message["receiver"]]
+        
+        if acceptor_room is not None:
+            sendToRoom(socketio, {
+                "type": "getFriends",
+                "friends": acceptor_friends,
+                "room": acceptor_room
+            })
+
+        if receiver_room is not None:
+            sendToRoom(socketio, {
+                "type": "getFriends",
+                "friends": receiver_friends,
+                "room": receiver_room
+            })
         
 @socketio.on('audio', namespace='/test')
 def handle_audio(data):

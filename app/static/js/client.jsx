@@ -150,7 +150,6 @@ function onMessage(evt) {
       break;
 
     case 'getFriends':
-      console.log("Got friends");
       friendsList = evt.friends;
       createFriendList();
       break;
