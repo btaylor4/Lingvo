@@ -1,11 +1,12 @@
 // imports
 import React from "react";
-import ReactDOM from "react-dom";
+import ReactDom from "react-dom";
 import {localStream} from "./video";
 import StartVideo from "./video"
 import {translateText} from "./translate"
 import io from 'socket.io-client';
-import NavBar from './nav'
+import NavBar from './nav';
+import Translation from './translate';
 
 // variables
 var protocol = 'https://'
@@ -35,8 +36,9 @@ var mediaConstraints = {
 socket.on('connect', onConnection)
 function onConnection() {
   if(window.location.pathname == "/user-portal") {
-    ReactDOM.render(<StartVideo />, document.getElementById("sourceVideoContent"));
-    ReactDOM.render(<Search />, document.getElementById("searchbar"));
+    ReactDom.render(<StartVideo />, document.getElementById("sourceVideoContent"));
+    ReactDom.render(<Search />, document.getElementById("searchbar"));
+    ReactDom.render(<NavBar />, document.getElementById('nav'));
     sendClientMessage({
       type: 'getSession',
       user: session.getItem('username')
@@ -49,37 +51,47 @@ function onConnection() {
   }
 }
 
-function notify(evt) {
-  $.notify.addStyle('answer', {
-    html: 
-      "<div>" +
-        "<div>" +
-          "<div class='title' data-notify-html='title'/>" +
-          "<div class='buttons'>" +            
-            "<button class='yes' data-notify-text='button'></button>" +
-            "<button class='no'>Cancel</button>" +
-          "</div>" +
-        "</div>" +
-      "</div>"
-  });
-  
-  //listen for click events from this style
-  $(document).on('click', '.notifyjs-answer-base .no', function() {
-    $(this).trigger('notify-hide');
-  });
-  $(document).on('click', '.notifyjs-answer-base .yes', function() {
-    $(this).trigger('notify-hide');
-    onOffer(evt);
-  });
 
-  $.notify({
-    title: 'Accept call from ' + evt.username + '?',
-    button: 'Confirm'
-  }, { 
-    style: 'answer',
-    autoHide: false,
-    clickToHide: false
-  });
+
+class CallModal extends React.Component {
+    handleAccept(evt) {
+        console.log('handle accept: ');
+        console.log(evt);
+        onOffer(evt);
+        $('#callModal').modal('hide');
+    }
+    
+    render () {
+        const evt = this.props.evt;
+        const caller = this.props.caller;
+
+        console.log(evt);
+
+return (<div><div className="modal fade" id="callModal" tabIndex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div className="modal-dialog" role="document">
+    <div className="modal-content">
+      <div className="modal-header">
+        <h5 className="modal-title" id="exampleModalLabel">Incoming call from {caller}</h5>
+        <button type="button" className="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div className="modal-footer">
+        <button type="button" className="btn btn-secondary" data-dismiss="modal">Dismiss Call</button>
+        <button type="button" className="btn btn-primary" onClick={ (e) => this.handleAccept(evt, e)}>Accept call from {caller}</button>
+      </div>
+    </div>
+  </div>
+</div>
+</div>)
+
+    }
+}
+
+function notify(evt) {
+  const element = <CallModal evt={evt} caller={evt.username}/>
+  ReactDom.render(element, document.getElementById('modal'));
+  $('#callModal').modal('show');
 }
 
 socket.on('message', onMessage)
@@ -197,7 +209,23 @@ export function createPeerConnection() {
     // Change css 
     $('.inner-container').attr('class','inner-container__after-call');
     $('.outer-container').attr('class','outer-container__after-call');
+    $('#remote-visibility').removeClass('hidden');
+
+    // Todo make work
+    // Render translation
+    ReactDom.render(<InCallButtons/>, document.getElementById('duringCallButtons'));
   };
+
+  // TODO: Make work
+  class InCallButtons extends React.Component { 
+    render() {
+        return <div>  
+            <div className="float-right"><EndVideo></EndVideo></div>
+            <div className="float-left"><Translation></Translation></div>
+        </div>
+    }
+  }
+
 
   peerConn.addStream(localStream);
 
@@ -276,10 +304,10 @@ class Card extends React.Component {
   
   render() {
     return <div className="card" id={this.props.id}>
-              <div className="card-block">
-                <h4>{this.props.name}</h4> 
-                <p> This is where a partial bio would go! </p>
-                <button type="button" onClick={ (e) => this.call(this.props.name, e) }> Call {this.props.name}</button>
+              <div className="card-body">
+                <h6 className="card-title">{this.props.name}</h6> 
+                <p className="cart-text"> This is where a partial bio would go! </p>
+                <button type="button" className="btn btn-info btn-sm" onClick={ (e) => this.call(this.props.name, e) }> Call {this.props.name}</button>
               </div>
             </div>
   }
@@ -310,6 +338,7 @@ class SearchBar extends React.Component {
           placeholder="Search..."
           ref="filterTextInput"
           onChange={this.onTextChange}
+          className="input-group-text"
         />
       </form>
   }
@@ -340,7 +369,7 @@ class FilteredCards extends React.Component {
   }
 }
 
-export default class Search extends React.Component {
+export class Search extends React.Component {
   render() {
     return <form>
         <input
@@ -360,7 +389,7 @@ export default class Search extends React.Component {
       }
     
       const element = <div>{list}</div>;
-      ReactDOM.render(element, document.getElementById('cardholder'));
+      ReactDom.render(element, document.getElementById('cardholder'));
     }, 100);
   }
 }
@@ -368,7 +397,7 @@ export default class Search extends React.Component {
 export class EndVideo extends React.Component {
   render() {
     return <div>
-      <button type="button" onClick={this.endVideo}> End Call</button>
+      <button type="button" className="btn btn-danger" onClick={this.endVideo}> End Call</button>
       </div>
   }
 
@@ -386,7 +415,21 @@ export class EndVideo extends React.Component {
     }
 
     closeCall();
+    revertUI();
   }
+}
+
+function revertUI() {
+    // Change css 
+    $('.inner-container').attr('class','inner-container');
+    $('.outer-container').attr('class','outer-container');
+    $('#remote-visibility').addClass('hidden');
+
+    // Unmount mounted components
+    // ReactDom.unmountComponentAtNode(<InCallButtons />)
+
+    // Rerender start call functionality
+    ReactDom.render(<StartVideo/>, document.getElementById("sourceVideoContent"))
 }
 
 function closeCall() {
@@ -396,3 +439,42 @@ function closeCall() {
     remoteStream = null;
   }
 }
+
+// export default class ClientView extends React.Component {
+//     render() {
+//         return(<div>
+//             <NavBar></NavBar>
+//             <div className="container">
+//                 <div className="row">
+//                     <div className="col">
+//                         <Search></Search>
+//                         <div className="row-4" id="cardholder"></div>
+//                     </div>
+//                     <div className="col-8">
+//                     <div className="outer-container">
+//                         <div id='remotevideo'>
+//                             <div className="video-overlay">
+//                                 <div className="video-overlay--final"></div>
+//                                 <div className="video-overlay--interim"></div>
+//                             </div>
+//                             <video autoPlay id="remoteVideo"></video>
+//                             <div id="remoteVideoContent"></div>
+//                         </div>
+//                         <div className="inner-container">
+//                             <video autoPlay id="sourceVideo"></video>
+//                         </div>
+//                     </div>
+//                     <div id="sourceVideoContent">
+//                     <StartVideo></StartVideo>
+//                     </div>
+//                     </div>
+//                 </div>
+//                 <div className="row">
+//                     <div className="col-4">
+//                     </div>
+//                 </div>
+//             </div>
+//             </div>)
+//     }
+// }
+

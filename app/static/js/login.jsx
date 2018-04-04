@@ -7,7 +7,8 @@ export default class Login extends React.Component {
         <div className="jumbotron">
             <h1 className="display-4">Login</h1>
             <LoginForm></LoginForm>
-            <p className="lead">Not a user yet?
+            <p className="lead">
+            <p> Not a user yet? </p>
                 <a className="btn btn-primary btn-lg" href="/register" role="button">Register</a>
             </p>
         </div>

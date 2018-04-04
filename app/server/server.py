@@ -154,7 +154,6 @@ def register():
             return 'Username has already been taken'
             
     return render_template('registration.html')
-                        
 
 @app.route('/login', methods=['GET', 'POST']) # sets up the page for registration
 def login():

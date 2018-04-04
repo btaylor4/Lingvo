@@ -122,7 +122,8 @@ export default class Translation extends React.Component {
     this.state = {
       final_text: "",
       recognition: {},
-      selectedLanguage: "en-US"
+      selectedLanguage: "en-US",
+      enabled: false
     };
     this.enableTranslation = this.enableTranslation.bind(this);
     this.disableTranslation = this.disableTranslation.bind(this);
@@ -139,15 +140,20 @@ export default class Translation extends React.Component {
 
   render() {
     const value = this.state.selectedLanguage;
+    const enabled = this.state.enabled;
     return (
       <div>
-        <button type="button" onClick={this.enableTranslation}>
-          Enable Translation
-        </button>
-        <button type="button" onClick={this.disableTranslation}>
-          Disable Translation
-        </button>
+        {enabled ? (
+          <button type="button" className="btn btn-secondary btn-sm" onClick={this.disableTranslation}>
+            Disable Translation
+          </button>
+        ) : (
+          <button type="button" className="btn btn-primary btn-sm" onClick={this.enableTranslation}>
+            Enable Translation
+          </button>
+        )}
         <hr />
+        <h6>Select your understood and spoken language</h6>
         <Select
           name="select-language"
           value={value}
@@ -169,10 +175,12 @@ export default class Translation extends React.Component {
       recognition.start();
     }, 10000);
     dataChannel = getDataChannel();
+    this.setState({ enabled: true });
   }
 
   disableTranslation() {
     recognition.abort();
     window.clearInterval();
+    this.setState({ enabled: false });
   }
 }

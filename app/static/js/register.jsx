@@ -13,7 +13,8 @@ export default class Register extends React.Component {
                 <input type="password" placeholder="Password" name="password"/> 
                 <input className="btn btn-default" type="submit" value="Sign up"/>
               </form>
-            <p className="lead">Already a user?
+            <p className="lead">
+            <p> Already a user? </p>
                 <a className="btn btn-primary btn-lg" href="/login" role="button">Login</a>
             </p>
         </div>

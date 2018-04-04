@@ -12,7 +12,10 @@ class CallToAction extends React.Component {
                 <p className="lead">
                     <a className="btn btn-primary btn-lg" href="/register" role="button">Register</a>
                 </p>
-                <p className="lead">Already a user?
+                <hr></hr>
+                
+                <p className="lead">
+                <p> Already a user? </p>
                     <a className="btn btn-primary btn-lg" href="/login" role="button">Login</a>
                 </p>
             </div>
