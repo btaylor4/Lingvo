@@ -275,6 +275,13 @@ def handle_message(message): # server has recieved a message from a client
                 "room": acceptor_room
             })
 
+        if "friend_requests" in acceptor_cursor:
+            sendToRoom(socketio, {
+                "type": "friend_request",
+                "requests": json.loads(json_util.dumps(acceptor_requests)),
+                "room": acceptor_room
+            })
+
         if receiver_room is not None:
             sendToRoom(socketio, {
                 "type": "getFriends",

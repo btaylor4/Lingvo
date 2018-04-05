@@ -120,7 +120,7 @@ function notify(evt) {
 
 function notifyFriendRequest(evt) {
   $("#friend-request-counter").text(" " + evt.requests.length);
-  $("#friend-request-counter").notify('New Friend Request');
+  // $("#friend-request-counter").notify('New Friend Request');
 }
 
 socket.on('message', onMessage)
@@ -173,9 +173,8 @@ function onMessage(evt) {
       break;
 
     case 'notifications':
-      const line = <hr/>
       friend_requests = evt.requests;
-      createDropdown();      
+      createDropdown();  
       break;
 
     default:
@@ -201,7 +200,7 @@ function createDropdown() {
   const line = <hr/>
   var list = [];
     
-  for(var i = 0; i < friend_requests .length; i++) {
+  for(var i = 0; i < friend_requests.length; i++) {
     list.push(<FriendRequest key={i} name={friend_requests[i]}></FriendRequest>);
     list.push(line);
   }
@@ -426,7 +425,7 @@ export default class Search extends React.Component {
       var value =  document.getElementById("searchQuery").value;
 
       for(var i = 0; i < users.length; i++) {
-        if(users[i].username.includes(value) && value != "")
+        if(users[i].username.includes(value) && value != "" && !users[i].username.includes(username))
           list.push(<Card key={i} name={users[i].username} id={users[i]._id.$oid}></Card>);
       }
     
