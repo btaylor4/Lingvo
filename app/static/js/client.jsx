@@ -210,6 +210,7 @@ export function createPeerConnection() {
     $('.inner-container').attr('class','inner-container__after-call');
     $('.outer-container').attr('class','outer-container__after-call');
     $('#remote-visibility').removeClass('hidden');
+    // Change incallbuttons
 
     // Todo make work
     // Render translation
@@ -423,13 +424,9 @@ function revertUI() {
     // Change css 
     $('.inner-container').attr('class','inner-container');
     $('.outer-container').attr('class','outer-container');
-    $('#remote-visibility').addClass('hidden');
-
-    // Unmount mounted components
-    // ReactDom.unmountComponentAtNode(<InCallButtons />)
-
-    // Rerender start call functionality
-    ReactDom.render(<StartVideo/>, document.getElementById("sourceVideoContent"))
+    $('#remote-visibility').addClass('hidden');  
+    $('#sourceVideoContent').removeClass('hidden');
+    $('#duringCallButtons').addClass('hidden');
 }
 
 function closeCall() {
@@ -439,42 +436,3 @@ function closeCall() {
     remoteStream = null;
   }
 }
-
-// export default class ClientView extends React.Component {
-//     render() {
-//         return(<div>
-//             <NavBar></NavBar>
-//             <div className="container">
-//                 <div className="row">
-//                     <div className="col">
-//                         <Search></Search>
-//                         <div className="row-4" id="cardholder"></div>
-//                     </div>
-//                     <div className="col-8">
-//                     <div className="outer-container">
-//                         <div id='remotevideo'>
-//                             <div className="video-overlay">
-//                                 <div className="video-overlay--final"></div>
-//                                 <div className="video-overlay--interim"></div>
-//                             </div>
-//                             <video autoPlay id="remoteVideo"></video>
-//                             <div id="remoteVideoContent"></div>
-//                         </div>
-//                         <div className="inner-container">
-//                             <video autoPlay id="sourceVideo"></video>
-//                         </div>
-//                     </div>
-//                     <div id="sourceVideoContent">
-//                     <StartVideo></StartVideo>
-//                     </div>
-//                     </div>
-//                 </div>
-//                 <div className="row">
-//                     <div className="col-4">
-//                     </div>
-//                 </div>
-//             </div>
-//             </div>)
-//     }
-// }
-

@@ -7,15 +7,17 @@ export default class Register extends React.Component {
         <div className="container">
         <div className="jumbotron">
             <h1 className="display-4">Register</h1>
+            <hr></hr>
             <form action= "" method="POST">
-                <input type="text" placeholder="First Name" name="firstname" />
-                <input type="text" placeholder="Username" name="username" /> 
-                <input type="password" placeholder="Password" name="password"/> 
-                <input className="btn btn-default" type="submit" value="Sign up"/>
+                <input type="text" className="form-control form-group col-sm-3" placeholder="First Name" name="firstname" />
+                <input type="text" className="form-control form-group col-sm-3" placeholder="Username" name="username" /> 
+                <input type="password" className="form-control form-group col-sm-3" placeholder="Password" name="password"/> 
+                <input className="btn btn-primary btn-lg" type="submit" value="Sign up"/>
               </form>
+              <hr></hr>
             <p className="lead">
             <p> Already a user? </p>
-                <a className="btn btn-primary btn-lg" href="/login" role="button">Login</a>
+                <a className="btn btn-secondary" href="/login" role="button">Login</a>
             </p>
         </div>
     </div>

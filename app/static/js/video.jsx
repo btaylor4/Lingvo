@@ -11,16 +11,12 @@ navigator.getUserMedia = navigator.getUserMedia ||
 export default class StartVideo extends React.Component {
     constructor() {
         super();
-        this.state = {
-          started: false
-        };
         this.startVideo = this.startVideo.bind(this);
       }
   
     render () {
-        const started = this.state.started;
     return <div>
-      {started? (null): (<button type="button" className="btn btn-success" onClick={this.startVideo}>Start Local Video</button>)}
+      <button type="button" className="btn btn-success" onClick={this.startVideo}>Start Local Video</button>
       </div>
   }
   
@@ -30,14 +26,13 @@ export default class StartVideo extends React.Component {
       video: true
     };
 
-    this.setState({started: true});
-
     function successCallback(stream) {
       var video = document.getElementById('sourceVideo');
       video.src = window.URL.createObjectURL(stream);
       video.muted = true;
       localStream = stream;
       createPeerConnection();
+      $('#sourceVideoContent').addClass('hidden');
     }
 
     function errorCallback(error) {
