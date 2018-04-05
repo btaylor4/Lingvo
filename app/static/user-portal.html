@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <!-- Latest compiled and minified bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+        crossorigin="anonymous">
+    <title>Lingvo</title>
+    <link href="{{ url_for('static',filename='css/video.css') }}" rel="stylesheet" type='text/css'>
+    <link href="{{ url_for('static',filename='css/style.css') }}" rel="stylesheet" type='text/css'>
+    <!-- <script src="https://cdn.socket.io/socket.io-1.4.0.js"></script> -->
+    <script src="https://unpkg.com/react@15.6.1/dist/react.js"></script>
+    <script src="https://unpkg.com/react-dom@15.6.1/dist/react-dom.js"></script>
+    <script src="https://unpkg.com/prop-types@15.5.10/prop-types.js"></script>
+    <script src="https://unpkg.com/classnames@2.2.5/index.js"></script>
+    <script src="https://unpkg.com/react-input-autosize@2.0.0/dist/react-input-autosize.js"></script>
+    <script src="https://unpkg.com/react-select@1.2.1/dist/react-select.js"></script>
+
+    <link rel="stylesheet" href="https://unpkg.com/react-select@1.2.1/dist/react-select.css">
+</head>
+
+<body>
+    <div id='nav'></div>
+
+    <div class="container">
+        <div class="row">
+            <div class="col">
+                <h2>Find your friends</h2>
+                <hr>
+                <div id="searchbar"></div>
+                <div class="row-4" id="cardholder">
+                </div>
+            </div>
+            <div class="col-8">
+                <div class="row">
+                    <div class="outer-container">
+                        <div class="hidden" id='remote-visibility'>
+                            <div class="video-overlay ">
+                                <div class="video-overlay--final"></div>
+                                <div class="video-overlay--interim"></div>
+                            </div>
+                            <video autoplay id="remoteVideo"></video>
+                            <div id="remoteVideoContent"></div>
+                        </div>
+
+                        <div class="inner-container">
+                            <video autoplay id="sourceVideo"></video>
+                        </div>
+                    </div>
+                </div>
+                <hr>
+                <div class="row">
+                    <div id="sourceVideoContent"></div>
+                    <div id="duringCallButtons"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id='modal'></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/notify/0.4.2/notify.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+    <!-- <script src="https://cdn.socket.io/socket.io-1.4.0.js"></script> -->
+    <script src="{{ url_for('static',filename='dist/bundle.js') }}" type="text/javascript"></script>
+</body>
+
+</html>

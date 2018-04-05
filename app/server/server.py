@@ -154,7 +154,6 @@ def register():
             return 'Username has already been taken'
             
     return render_template('registration.html')
-                        
 
 @app.route('/login', methods=['GET', 'POST']) # sets up the page for registration
 def login():
@@ -177,11 +176,11 @@ def logout():
 @app.route("/user-portal")
 @login_required
 def home():
-    return render_template("index.html") #, username=session['username']
+    return render_template("user-portal.html") #, username=session['username']
     
 @app.route("/")
 def index():
-        return render_template("home.html")
+    return render_template("index.html")
 
 if __name__ == "__main__":
     socketio.run(app, debug=True) # debug = true to put in debug mode

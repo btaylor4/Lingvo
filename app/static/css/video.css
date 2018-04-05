@@ -1,11 +1,9 @@
 .outer-container {
-    border: 1px dotted black;
-    width: 50%;
+    width: 100%;
     text-align: center;
 }
 
 .inner-container {
-    border: 1px solid black;
     display: inline-block;
     position: relative;
 }
@@ -37,25 +35,25 @@
 
 video {
     width: 100%;
-    height: 100%;
 }
 /* After call */
 
 .outer-container__after-call {
-    border: 1px dotted black;
-    width: 50%;
-    height: 50%;
+    width: 100%;
     text-align: center;
     position: relative;
     display: inline-block;
 }
 
 .inner-container__after-call {
-    border: 1px solid black;
     display: inline-block;
     position: absolute;
     top: 0px;
     right: 0px;
     height: 20%;
     width: 20%;
+}
+
+.hidden {
+    display: none;
 }
