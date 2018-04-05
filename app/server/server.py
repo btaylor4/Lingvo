@@ -20,14 +20,14 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
 
+connectedUsers = {}
+
 @login_manager.user_loader
 def load_user(user_id):
     user = mongo.db.users.find_one({"username": user_id})
     if not user:
         return None
     return User(user['_id'])
-    
-connectedUsers = {}
 
 class User():
     def __init__(self, username):
@@ -89,6 +89,75 @@ def handle_message(message): # server has recieved a message from a client
             "room": room
         })
         
+    elif(message["type"] == "getFriends"):
+        # get friends from database
+        room = connectedUsers[message["user"]]
+        cursor = mongo.db.users.find_one({'username': message["user"]})
+
+        if "friends" in cursor:
+            friends_list = list(cursor["friends"])
+            if room is not None:
+                sendToRoom(socketio, {
+                    "type": "getFriends",
+                    "friends": json.loads(json_util.dumps(friends_list)),
+                    "room": room
+                })
+
+    elif(message["type"] == "getRequests"):
+        # get friend requests when a user logs in
+        room = connectedUsers[message["user"]]
+        cursor = mongo.db.users.find_one({'username': message["user"]})
+        if "friend_requests" in cursor:
+            requests = list(cursor["friend_requests"])
+
+            if room is not None:
+                sendToRoom(socketio, {
+                    "type": "notifications",
+                    "requests": json.loads(json_util.dumps(requests)),
+                    "room": room
+                })
+
+    elif(message["type"] == "friend_request"): #send the request
+        friend_notifications = None
+        room = connectedUsers[message["receiver"]]
+        cursor = mongo.db.users.find_one({'username': message["receiver"]})
+
+        if cursor is not None: # check if user exists
+            if "friend_requests" in cursor:
+                friend_notifications = list(cursor["friend_requests"])
+
+            if friend_notifications is not None: # check to see if they have a list yet
+                if message["requester"] not in friend_notifications: # check if users is already in list
+                    friend_notifications.append(message["requester"])
+                    mongo.db.users.update(
+                        { "username" : message["receiver"]},
+                        { "$set": 
+                            {
+                                "friend_requests": friend_notifications
+                            } 
+                        }
+                    )
+
+            else:
+                friend_notifications = list()
+                friend_notifications.append(message["requester"])
+                mongo.db.users.update(
+                    { "username" : message["receiver"]},
+                    { "$set": 
+                        {
+                            "friend_requests": friend_notifications
+                        } 
+                    }
+                )
+
+        if room is not None:
+            sendToRoom(socketio, {
+                "type": "friend_request",
+                "requests": json.loads(json_util.dumps(friend_notifications)),
+                "username": message["requester"],
+                "room": room
+            })
+
     elif(message["type"] == "getUsers"):
         room = connectedUsers[message["user"]]
         
@@ -96,31 +165,20 @@ def handle_message(message): # server has recieved a message from a client
         for u in users: # Make sure to only return necessary information
             del u['password']
         
-        # sendToRoom(socketio, {
-        #     "type": "gotUsers", 
-        #     "users": json.loads(json_util.dumps(users)),
-        #     "room": room
-        # })
-        
-        sendToClient(socketio, {
+        sendToRoom(socketio, {
             "type": "gotUsers", 
-            "users": json.loads(json_util.dumps(users))
+            "users": json.loads(json_util.dumps(users)),
+            "room": room
         })
         
     elif(message["type"] == "getSession"):
         connectedUsers[message["user"]] = request.sid
         room = connectedUsers[message["user"]]
         
-        # Not sure if this will work
-        # sendToRoom(socketio, {
-        #     "type": "session", 
-        #     "sid": request.sid
-        #     "room": room
-        # })
-        
-        sendToClient(socketio, {
+        sendToRoom(socketio, {
             "type": "session", 
-            "sid": request.sid
+            "sid": request.sid,
+            "room": room
         })
 
     elif(message["type"] == "leave"):
@@ -128,6 +186,108 @@ def handle_message(message): # server has recieved a message from a client
             "type": "leave",
             "room": connectedUsers[message["id"]]
         })
+
+    elif(message["type"] == "accept_friend_request"):
+        friends = None
+        receiver_cursor = mongo.db.users.find_one({'username': message["receiver"]})
+        acceptor_cursor = mongo.db.users.find_one({'username': message["acceptor"]})
+
+        if receiver_cursor is not None:
+            if "friends" in receiver_cursor:
+                friends = list(receiver_cursor["friends"])
+
+            if friends is not None:
+                if message["acceptor"] not in friends:
+                    friends.append(message["acceptor"])
+                    mongo.db.users.update(
+                        { "username": message["receiver"] },
+                        { "$set": 
+                            {
+                                "friends": friends
+                            }
+                        }
+                    )
+
+            else:
+                friends = list()
+                friends.append(message["acceptor"])
+                mongo.db.users.update(
+                        { "username": message["receiver"] },
+                        { "$set": 
+                            {
+                                "friends": friends
+                            }
+                        }
+                )
+
+        receiver_friends = friends
+
+        friends = None
+        if acceptor_cursor is not None:
+            if "friends" in acceptor_cursor:
+                friends = list(acceptor_cursor["friends"])
+
+            if friends is not None:
+                if message["receiver"] not in friends:
+                    friends.append(message["receiver"])
+                    mongo.db.users.update(
+                        { "username": message["acceptor"] },
+                        { "$set": 
+                            {
+                                "friends": friends
+                            }
+                        }
+                    )
+
+            else:
+                friends = list()
+                friends.append(message["receiver"])
+                mongo.db.users.update(
+                        { "username": message["acceptor"] },
+                        { "$set": 
+                            {
+                                "friends": friends
+                            }
+                        }
+                )
+
+        # remove friend request
+        acceptor_requests = list(acceptor_cursor["friend_requests"])
+        acceptor_requests.remove(message["receiver"])
+        mongo.db.users.update(
+                        { "username": message["acceptor"] },
+                        { "$set": 
+                            {
+                                "friend_requests": acceptor_requests
+                            }
+                        }
+                )
+
+        acceptor_friends = friends
+
+        acceptor_room = connectedUsers[message["acceptor"]]
+        receiver_room = connectedUsers[message["receiver"]]
+        
+        if acceptor_room is not None:
+            sendToRoom(socketio, {
+                "type": "getFriends",
+                "friends": acceptor_friends,
+                "room": acceptor_room
+            })
+
+        if "friend_requests" in acceptor_cursor:
+            sendToRoom(socketio, {
+                "type": "friend_request",
+                "requests": json.loads(json_util.dumps(acceptor_requests)),
+                "room": acceptor_room
+            })
+
+        if receiver_room is not None:
+            sendToRoom(socketio, {
+                "type": "getFriends",
+                "friends": receiver_friends,
+                "room": receiver_room
+            })
         
 @socketio.on('audio', namespace='/test')
 def handle_audio(data):
@@ -155,7 +315,6 @@ def register():
             
     return render_template('registration.html')
                         
-
 @app.route('/login', methods=['GET', 'POST']) # sets up the page for registration
 def login():
     if request.method == 'POST':

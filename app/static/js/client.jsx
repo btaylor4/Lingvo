@@ -21,6 +21,8 @@ var sid;
 var session = window.localStorage;
 var username;
 var remotevid;
+var friendsList;
+var friend_requests;
 
 var mediaConstraints = {
   'mandatory': {
@@ -70,6 +72,16 @@ function onConnection() {
       type: 'getUsers',
       user: session.getItem('username')
     });
+
+    sendClientMessage({
+      type: 'getFriends',
+      user: session.getItem('username')
+    });
+
+    sendClientMessage({
+      type: 'getRequests',
+      user: session.getItem('username')
+    });
   }
 }
 
@@ -106,6 +118,11 @@ function notify(evt) {
   });
 }
 
+function notifyFriendRequest(evt) {
+  $("#friend-request-counter").text(" " + evt.requests.length);
+  // $("#friend-request-counter").notify('New Friend Request');
+}
+
 socket.on('message', onMessage)
 function onMessage(evt) {
   console.log("Client has recieved a message");
@@ -131,6 +148,11 @@ function onMessage(evt) {
       users = evt.users;
       // console.log(users);
       break;
+
+    case 'getFriends':
+      friendsList = evt.friends;
+      createFriendList();
+      break;
       
     case 'session':
       // console.log("Got session")
@@ -144,9 +166,48 @@ function onMessage(evt) {
       closeCall();
       break; 
         
+    case 'friend_request': // we receive a friend request
+      friend_requests = evt.requests;
+      notifyFriendRequest(evt);
+      createDropdown();
+      break;
+
+    case 'notifications':
+      friend_requests = evt.requests;
+      createDropdown();  
+      break;
+
     default:
       break;
   }
+}
+
+function createFriendList() {
+  const line = <hr/>
+  var list = [];
+    
+  for(var i = 0; i < friendsList.length; i++) {
+    list.push(<FriendCard key={i} name={friendsList[i]}></FriendCard>);
+    list.push(line);
+  }
+
+  const element = <div>{list}</div>;
+
+  ReactDOM.render(element, document.getElementById("friends-list"));
+}
+
+function createDropdown() {
+  const line = <hr/>
+  var list = [];
+    
+  for(var i = 0; i < friend_requests.length; i++) {
+    list.push(<FriendRequest key={i} name={friend_requests[i]}></FriendRequest>);
+    list.push(line);
+  }
+
+  const element = <div>{list}</div>;
+
+  ReactDOM.render(element, document.getElementById("dropdown-friends"));
 }
 
 function onOffer(evt) {
@@ -275,7 +336,35 @@ export function getDataChannel() {
     return dataChannel;
 }
 
-class Card extends React.Component {
+function closeCall() {
+  peerConn = null;
+  if(remotevid != null) {
+    remotevid.src = null; 
+    remoteStream = null;
+  }
+}
+
+class Card extends React.Component { //these will now be sending friend requests
+  sendFriendRequest(name) {
+    sendClientMessage({
+      type: "friend_request",
+      requester: session.getItem('username'),
+      receiver: name
+    });
+  }
+
+  render() {
+    return <div className="card" id={this.props.id}>
+              <div className="card-block">
+                <h4>{this.props.name}</h4> 
+                <p> This is where a partial bio would go! </p>
+                <button type="button" onClick={ (e) => this.sendFriendRequest(this.props.name, e) }> Send Friend Request</button>
+              </div>
+            </div>
+  }
+}
+
+class FriendCard extends React.Component {
   call(name) {
     if(peerConn == null) {
       console.log("Peer connection is null!");
@@ -297,70 +386,24 @@ class Card extends React.Component {
       errorCallback, 
       mediaConstraints);    
   }
-  
-  render() {
-    return <div className="card" id={this.props.id}>
-              <div className="card-block">
-                <h4>{this.props.name}</h4> 
-                <p> This is where a partial bio would go! </p>
-                <button type="button" onClick={ (e) => this.call(this.props.name, e) }> Call {this.props.name}</button>
-              </div>
-            </div>
-  }
-}
 
-class FriendCards extends React.Component {
   render() {
-    var list = [];
-    
-    for(var i = 0; i < users.length; i++) {
-      // console.log(users[i].username);
-      list.push(<Card key={i} name={users[i].username}></Card>);
-    }
-    
-    return <div>{list}</div>;
-  }
-}
+    return <div className="col-sm-12">
 
-class SearchBar extends React.Component {
-  onTextChange() {
-    this.props.onUserInput(this.refs.filterTextInput);
-  }
-  
-  render() {
-    return <form>
-        <input
-          type="text"
-          placeholder="Search..."
-          ref="filterTextInput"
-          onChange={this.onTextChange}
-        />
-      </form>
-  }
-}
+        <div className="col-sm-2">
+            <h3 className="fa fa-user fa-3x"></h3>
+        </div>
 
-class FilteredCards extends React.Component {
-  getInitialState() {
-    return{
-      filteredText: ''
-    };
-  }
-  
-  handleUserInput(text) {
-    this.setState({
-      filterText: text
-    })
-  }
-  
-  render() {
-    return <div>
-      <SearchBar>
-        onUserInput ={this.handleUserInput}
-      </SearchBar>
-      <FriendCards>
-        listedUsers={this.props.listedUsers}
-      </FriendCards>
-    </div>
+        <div className="col-sm-8">
+          <h4>{this.props.name}</h4>
+        </div>
+
+        <div className="col-sm-2">
+          <br/>
+          <button type="button" onClick={ (e) => this.call(this.props.name, e) }> Call {this.props.name}</button>
+        </div>
+
+      </div>
   }
 }
 
@@ -371,6 +414,7 @@ export default class Search extends React.Component {
           type="text"
           placeholder="Search..."
           onChange={this.onTextChange}
+          id="searchQuery"
         />
     </form>
   }
@@ -378,14 +422,44 @@ export default class Search extends React.Component {
   onTextChange() {
     setTimeout(function() {
       var list = [];
-    
+      var value =  document.getElementById("searchQuery").value;
+
       for(var i = 0; i < users.length; i++) {
-        list.push(<Card key={i} name={users[i].username} id={users[i]._id.$oid}></Card>);
+        if(users[i].username.includes(value) && value != "" && !users[i].username.includes(username))
+          list.push(<Card key={i} name={users[i].username} id={users[i]._id.$oid}></Card>);
       }
     
       const element = <div>{list}</div>;
       ReactDOM.render(element, document.getElementById('cardholder'));
     }, 100);
+  }
+}
+
+class FriendRequest extends React.Component {
+  acceptRequest(name) {
+    sendClientMessage({
+      type: "accept_friend_request",
+      acceptor: session.getItem("username"),
+      receiver: name
+    })
+  }
+
+  denyRequest(name) {
+    sendClientMessage({
+      type: "decline_friend_request",
+      denier: session.getItem("username"),
+      receiver: name
+    })
+  }
+  
+  render() {
+    return <div>
+      {this.props.name}
+        <div className="button-options">
+          <button onClick={(e) => this.acceptRequest(this.props.name, e)}> Accept </button>
+          <button onClick={(e) => this.denyRequest(this.props.name, e)}> Decline </button>
+        </div>
+      </div>
   }
 }
 
@@ -410,13 +484,5 @@ export class EndVideo extends React.Component {
     }
 
     closeCall();
-  }
-}
-
-function closeCall() {
-  peerConn = null;
-  if(remotevid != null) {
-    remotevid.src = null; 
-    remoteStream = null;
   }
 }
