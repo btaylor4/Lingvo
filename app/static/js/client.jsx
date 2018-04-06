@@ -192,6 +192,9 @@ function createDropdown() {
   const element = <div>{list}</div>;
 
   ReactDOM.render(element, document.getElementById("dropdown-friends"));
+
+  //Update number of friends in notification
+  $('#friend-request-counter').text(friend_requests.length);
 }
 
 function onOffer(evt) {
@@ -463,11 +466,11 @@ class FriendRequest extends React.Component {
   }
   
   render() {
-    return <div>
-      {this.props.name}
+    return <div className="pl-2 pr-2">
+      <h4>{this.props.name}</h4><p>wants to be your friend</p>
         <div className="button-options">
-          <button onClick={(e) => this.acceptRequest(this.props.name, e)}> Accept </button>
-          <button onClick={(e) => this.denyRequest(this.props.name, e)}> Decline </button>
+          <button type="button" className="btn btn-outline-primary btn-sm mr-2" onClick={(e) => this.acceptRequest(this.props.name, e)}> Confirm </button>
+          <button type="button" className="btn btn-outline-danger btn-sm" onClick={(e) => this.denyRequest(this.props.name, e)}> Deny </button>
         </div>
       </div>
   }
