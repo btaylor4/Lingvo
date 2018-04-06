@@ -355,13 +355,13 @@ class Card extends React.Component { //these will now be sending friend requests
   }
 
   render() {
-    return <div className="card" id={this.props.id}>
-              <div className="card-block">
-                <h4>{this.props.name}</h4> 
+    return (<div className="card" id={this.props.id}>
+              <div className="card-body">
+                <h6 className="card-title">{this.props.name}</h6>
                 <p> This is where a partial bio would go! </p>
-                <button type="button" onClick={ (e) => this.sendFriendRequest(this.props.name, e) }> Send Friend Request</button>
+                <button type="button" className="btn btn-success btn-sm" onClick={ (e) => this.sendFriendRequest(this.props.name, e) }> Send Friend Request</button>
               </div>
-            </div>
+            </div>)
   }
 }
 
@@ -389,21 +389,13 @@ class FriendCard extends React.Component {
   }
   
   render() {
-    return <div className="col-sm-12">
-        <div className="col-sm-2">
-            <h3 className="fa fa-user fa-3x"></h3>
+    return (<div className="card" id={this.props.id}>
+        <div className="card-body">
+        <h6 className="card-title">{this.props.name}</h6>
+        <p className="card-text"> This is where a partial bio would go! </p>
+        <button type="button" className="btn btn-info btn-sm" onClick={ (e) => this.call(this.props.name, e) }>Call {this.props.name}</button>
         </div>
-
-        <div className="col-sm-8">
-          <h4>{this.props.name}</h4>
-        </div>
-
-        <div className="col-sm-2">
-          <br/>
-          <button type="button" onClick={ (e) => this.call(this.props.name, e) }> Call {this.props.name}</button>
-        </div>
-
-      </div>
+    </div>)
   }
 }
 

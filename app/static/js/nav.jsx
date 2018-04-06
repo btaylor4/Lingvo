@@ -8,7 +8,7 @@ export default class NavBar extends React.Component {
     const loggedIn = username != null && username != '' ? true:false;
 
     return (
-      <nav className="navbar navbar-expand-lg navbar-light bg-light justify-content-between mb-5">
+      <nav className="navbar navbar-expand-sm navbar-light bg-light justify-content-between mb-5">
         <a className="navbar-brand" href="/">
           Lingvo
         </a>

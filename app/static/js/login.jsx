@@ -23,7 +23,6 @@ class LoginButton extends React.Component {
     handleClick() {
       window.localStorage.setItem('username', document.getElementById('username').value);
     }
-    
     render() {
       return <button className="btn btn-primary btn-lg" onClick={this.handleClick}> Login </button>
     }
