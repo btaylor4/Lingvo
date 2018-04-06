@@ -116,12 +116,22 @@ function restartRecognition() {
   recognition.start();
 }
 
+export function enableSpeechToText() {
+    recognition.start();
+    window.setInterval(function() {
+      recognition.stop();
+      console.log("Audio interrupt");
+      console.log("starting recognition");
+      recognition.start();
+    }, 10000);
+    dataChannel = getDataChannel();
+}
+
 export default class Translation extends React.Component {
   constructor() {
     super();
     this.state = {
       final_text: "",
-      recognition: {},
       selectedLanguage: "en-US",
       enabled: false
     };
@@ -167,20 +177,14 @@ export default class Translation extends React.Component {
   }
 
   enableTranslation() {
-    recognition.start();
-    window.setInterval(function() {
-      recognition.stop();
-      console.log("Audio interrupt");
-      console.log("starting recognition");
-      recognition.start();
-    }, 10000);
-    dataChannel = getDataChannel();
-    this.setState({ enabled: true });
+    this.setState({enabled: true});
+    $(".video-overlay--final").removeClass('hidden');
+    $(".video-overlay--interim").removeClass('hidden');
   }
 
   disableTranslation() {
-    recognition.abort();
-    window.clearInterval();
     this.setState({ enabled: false });
+    $(".video-overlay--final").addClass('hidden');
+    $(".video-overlay--interim").addClass('hidden');
   }
 }

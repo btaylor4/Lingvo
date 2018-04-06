@@ -3,7 +3,7 @@ import React from "react";
 import ReactDom from "react-dom";
 import {localStream} from "./video";
 import StartVideo from "./video"
-import {translateText} from "./translate"
+import {translateText, enableSpeechToText} from "./translate"
 import io from 'socket.io-client';
 import NavBar from './nav';
 import Translation from './translate';
@@ -275,7 +275,10 @@ export function createPeerConnection() {
     // Todo make work
     // Render translation
     ReactDom.render(<InCallButtons/>, document.getElementById('duringCallButtons'));
+
+    enableSpeechToText();
   };
+
 
   // TODO: Make work
   class InCallButtons extends React.Component { 

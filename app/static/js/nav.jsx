@@ -40,8 +40,8 @@ export default class NavBar extends React.Component {
             </ul>) : (
                 <ul className="navbar-nav ml-auto">
             <li className="nav-item dropdown">
-                <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Friend Requests <span id="friend-request-counter" class="badge badge-dark badge-pill">&nbsp; 0</span></a>
-                <div class="dropdown-menu" id="dropdown-friends">
+                <a className="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Friend Requests <span id="friend-request-counter" className="badge badge-dark badge-pill">&nbsp; 0</span></a>
+                <div className="dropdown-menu" id="dropdown-friends">
                 </div>
             </li>
             <li className="nav-item">
