@@ -40,7 +40,7 @@ export default class NavBar extends React.Component {
             </ul>) : (
                 <ul className="navbar-nav">
             <li className="nav-item">
-              <a className="nav-link" onClick={window.localStorage.setItem('username', '')} href="/logout">
+              <a className="nav-link" onClick={() =>window.localStorage.setItem('username', '')} href="/logout">
                 Logout
               </a>
             </li>
