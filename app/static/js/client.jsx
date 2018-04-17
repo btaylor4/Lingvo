@@ -306,13 +306,13 @@ export function createPeerConnection() {
         console.log("Got Data Channel Message:", event.data);
         var data = JSON.parse(event.data);
         // Check if it's coming from the right source
+        console.log(data);
         if (data.lang != null && data.text != null && data.interim != null){
             translateText(data.lang, data.text, data.interim);
         }
       };
       
       dataChannel.onopen = function () {
-        dataChannel.send("Hello World!");
         console.log('Data channel opened');
       };
       
@@ -328,7 +328,6 @@ export function createPeerConnection() {
           };
           
           dataChannel.onopen = function () {
-            dataChannel.send("Hello World!");
             console.log('Data channel opened');
           };
           

@@ -43,6 +43,8 @@ export function translateText(sourceLang, sourceText, interim) {
             currentFinalCaption + " " + translatedText
           );
         }
+        //Clear interim text
+        $(".video-overlay--interim").text('');
       } else {
         $(".video-overlay--interim").text(translatedText);
       }
@@ -162,6 +164,8 @@ export default class Translation extends React.Component {
             Enable Translation
           </button>
         )}
+        {/* <button type="button" className="btn btn-primary btn-lg" onClick={enableSpeechToText}>Enable Speech to Text
+        </button> */}
         <hr />
         <h6>Select your understood and spoken language</h6>
         <Select
@@ -178,6 +182,9 @@ export default class Translation extends React.Component {
 
   enableTranslation() {
     this.setState({enabled: true});
+    // Clear translation
+    $(".video-overlay--final").text('');
+    $(".video-overlay--interim").text('');
     $(".video-overlay--final").removeClass('hidden');
     $(".video-overlay--interim").removeClass('hidden');
   }
