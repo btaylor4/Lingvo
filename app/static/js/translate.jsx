@@ -119,6 +119,7 @@ function restartRecognition() {
 }
 
 export function enableSpeechToText() {
+    dataChannel = getDataChannel();
     recognition.start();
     window.setInterval(function() {
       recognition.stop();
@@ -126,7 +127,6 @@ export function enableSpeechToText() {
       console.log("starting recognition");
       recognition.start();
     }, 10000);
-    dataChannel = getDataChannel();
 }
 
 export default class Translation extends React.Component {
@@ -164,8 +164,8 @@ export default class Translation extends React.Component {
             Enable Translation
           </button>
         )}
-        {/* <button type="button" className="btn btn-primary btn-lg" onClick={enableSpeechToText}>Enable Speech to Text
-        </button> */}
+        <button type="button" className="btn btn-primary btn-lg" onClick={enableSpeechToText}>Enable Speech to Text
+        </button>
         <hr />
         <h6>Select your understood and spoken language</h6>
         <Select

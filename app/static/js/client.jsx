@@ -276,7 +276,7 @@ export function createPeerConnection() {
     // Render translation
     ReactDom.render(<InCallButtons/>, document.getElementById('duringCallButtons'));
 
-    enableSpeechToText();
+    // enableSpeechToText();
   };
 
 
@@ -329,17 +329,6 @@ export function createPeerConnection() {
           
           dataChannel.onopen = function () {
             console.log('Data channel opened');
-          };
-
-          dataChannel.onmessage = function (event) {
-            console.log(event);
-            console.log("Got Data Channel Message:", event.data);
-            var data = JSON.parse(event.data);
-            // Check if it's coming from the right source
-            console.log(data);
-            if (data.lang != null && data.text != null && data.interim != null){
-                translateText(data.lang, data.text, data.interim);
-            }
           };
           
           dataChannel.onclose = function () {
