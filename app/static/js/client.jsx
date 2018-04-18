@@ -276,7 +276,7 @@ export function createPeerConnection() {
     // Render translation
     ReactDom.render(<InCallButtons/>, document.getElementById('duringCallButtons'));
 
-    // enableSpeechToText();
+    setTimeout(enableSpeechToText(), 500);
   };
 
 

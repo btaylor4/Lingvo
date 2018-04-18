@@ -164,8 +164,8 @@ export default class Translation extends React.Component {
             Enable Translation
           </button>
         )}
-        <button type="button" className="btn btn-primary btn-lg" onClick={enableSpeechToText}>Enable Speech to Text
-        </button>
+        {/* <button type="button" className="btn btn-primary btn-lg" onClick={enableSpeechToText}>Enable Speech to Text
+        </button> */}
         <hr />
         <h6>Select your understood and spoken language</h6>
         <Select
