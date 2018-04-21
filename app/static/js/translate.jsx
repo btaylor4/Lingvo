@@ -119,6 +119,7 @@ function restartRecognition() {
 }
 
 export function enableSpeechToText() {
+    console.log("enableSpeechToText called");
     dataChannel = getDataChannel();
     recognition.start();
     window.setInterval(function() {

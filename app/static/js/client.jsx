@@ -275,8 +275,6 @@ export function createPeerConnection() {
     // Todo make work
     // Render translation
     ReactDom.render(<InCallButtons/>, document.getElementById('duringCallButtons'));
-
-    setTimeout(enableSpeechToText(), 500);
   };
 
 
@@ -329,6 +327,8 @@ export function createPeerConnection() {
           
           dataChannel.onopen = function () {
             console.log('Data channel opened');
+            enableSpeechToText();
+
           };
           
           dataChannel.onclose = function () {
