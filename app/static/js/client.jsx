@@ -231,7 +231,19 @@ function onCandidate(evt) {
   // console.log("Candidate event");
   if(evt!= null) {
     var candidate = new RTCIceCandidate(evt);
-    peerConn.addIceCandidate(candidate);
+    peerConn.addIceCandidate(
+      function(candidate) {
+        peerConn.addIceCandidate(candidate);
+      },
+      function(success) {
+        console.log("On candidate was successful");
+        console.log(success);
+      },
+      function(error) {
+        console.log("On candidate failed");
+        console.log(error);
+      }
+    );
   }
 }
 
