@@ -245,6 +245,10 @@ export function createPeerConnection() {
   var pc_config = {
     'iceServers' :[{
     'url': 'stun:stun.services.mozilla.com:3478'
+    },      {
+      'url': 'turn:turn.anyfirewall.com:443?transport=tcp',
+      'credential': 'webrtc',
+      'username': 'webrtc'
     }]
   };
 
