@@ -233,7 +233,7 @@ function onCandidate(evt) {
     var candidate = new RTCIceCandidate(evt);
     peerConn.addIceCandidate(
       function(candidate) {
-        peerConn.addIceCandidate(candidate);
+        peerConn.addIceCandidate(evt.candidate);
       },
       function(success) {
         console.log("On candidate was successful");
