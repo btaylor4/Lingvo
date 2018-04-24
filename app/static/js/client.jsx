@@ -205,6 +205,8 @@ function onOffer(evt) {
     createPeerConnection();
   }
   
+  peerConn.setRemoteDescription(new RTCSessionDescription(evt.offer)); 
+
   peerConn.createAnswer(function (answer) {
     // console.log("Creating answer");
     peerConn.setLocalDescription(answer);
