@@ -28,7 +28,7 @@ var friend_requests;
 
 var mediaConstraints = {
   'mandatory': {
-    'offerToReceiveAudio':true,
+    'offerToRecieveAudio':true,
     'offerToRecieveVideo':true
   }
 };
@@ -230,11 +230,12 @@ function errorCallback() {
 function onCandidate(evt) {
   // console.log("Candidate event");
   if(evt!= null) {
-    var candidate = new RTCIceCandidate({ candidate: evt.candidate });
+    var candidate = new RTCIceCandidate(evt);
     peerConn.addIceCandidate(candidate,
       function(success) {
-        console.log("Succeess add ice candidate");
-        console.log(success);
+        console.log("Success add ice candidate");
+        console.log("Candidate:");
+        console.log(candidate);
       },
       function(error) {
         console.log("Error on add ice candidate");
@@ -252,7 +253,7 @@ export function createPeerConnection() {
   // console.log("Creating PeerConnection")
   var pc_config = {
     'iceServers' :[{
-    'url': 'stun:stun.services.mozilla.com:3478'
+      'url': 'stun:stun2.l.google.com:19302'
     },      {
       'url': 'turn:turn.anyfirewall.com:443?transport=tcp',
       'credential': 'webrtc',
