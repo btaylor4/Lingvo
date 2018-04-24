@@ -198,8 +198,9 @@ function createDropdown() {
 }
 
 function onOffer(evt) {
-  connectedUser = evt.username;
   // console.log("We recieved a call from " + connectedUser);
+  var sendAnswer;
+  connectedUser = evt.username;
 
   if(peerConn == null) {
     createPeerConnection();
@@ -208,14 +209,16 @@ function onOffer(evt) {
   peerConn.createAnswer(function (answer) {
     // console.log("Creating answer");
     peerConn.setLocalDescription(answer);
-    sendClientMessage({
-      type: "answer",
-      answer: answer
-    });
+    sendAnswer = answer;
   }, errorCallback, 
      mediaConstraints);
 
   peerConn.setRemoteDescription(new RTCSessionDescription(evt.offer)); // sets the discription of the other person calling us
+  
+  sendClientMessage({
+    type: "answer",
+    answer: sendAnswer
+  });
 }
 
 function onAnswer(evt) {
