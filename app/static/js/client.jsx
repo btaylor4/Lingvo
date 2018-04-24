@@ -205,8 +205,6 @@ function onOffer(evt) {
     createPeerConnection();
   }
   
-  peerConn.setRemoteDescription(new RTCSessionDescription(evt.offer)); // sets the discription of the other person calling us
-  
   peerConn.createAnswer(function (answer) {
     // console.log("Creating answer");
     peerConn.setLocalDescription(answer);
@@ -216,6 +214,8 @@ function onOffer(evt) {
     });
   }, errorCallback, 
      mediaConstraints);
+
+  peerConn.setRemoteDescription(new RTCSessionDescription(evt.offer)); // sets the discription of the other person calling us
 }
 
 function onAnswer(evt) {
