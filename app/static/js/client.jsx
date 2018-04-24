@@ -230,8 +230,8 @@ function errorCallback() {
 function onCandidate(evt) {
   // console.log("Candidate event");
   if(evt!= null) {
-    var candidate = new RTCIceCandidate(evt);
-    peerConn.addIceCandidate(evt.candidate);
+    var candidate = new RTCIceCandidate({ candidate: evt.candidate });
+    peerConn.addIceCandidate(candidate);
   }
 }
 
