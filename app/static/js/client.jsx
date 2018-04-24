@@ -114,7 +114,7 @@ function onMessage(evt) {
   switch(evt.type) {
     case 'offer':
       // We reieve a call
-      notify(evt);
+      onOffer(evt); // test
       break;
     
     case 'answer':
